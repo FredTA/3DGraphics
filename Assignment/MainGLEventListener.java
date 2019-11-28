@@ -11,6 +11,20 @@ public class MainGLEventListener implements GLEventListener {
 
   private static final boolean DISPLAY_SHADERS = false;
 
+  public enum AnimationSelection{
+    Rock,
+    Roll,
+    Slide,
+    SlideRockAndRoll,
+    None
+  }
+
+  private AnimationSelection animation = AnimationSelection.None;
+
+  private boolean rolling = false;
+  private boolean rocking = false;
+  private boolean sliding = false;
+
   public MainGLEventListener(Camera camera) {
     this.camera = camera;
     this.camera.setPosition(new Vec3(4f,12f,18f));
@@ -65,17 +79,26 @@ public class MainGLEventListener implements GLEventListener {
    *
    */
 
-   public void incXPosition() {
-     xPosition += 0.5f;
-     if (xPosition>5f) xPosition = 5f;
-     updateX();
-   }
+  public void selectAnimation(AnimationSelection animation) {
+    this.animation = animation;
+  }
 
-   public void decXPosition() {
-     xPosition -= 0.5f;
-     if (xPosition<-5f) xPosition = -5f;
-     updateX();
-   }
+  private void animate() {
+    switch(animation) {
+      case Rock :
+        System.out.println("Rocking...");
+        break;
+      case Roll :
+        System.out.println("Rolling...");
+        break;
+      case Slide :
+        System.out.println("Sliding...");
+        break;
+      case SlideRockAndRoll :
+        System.out.println("Sliding, rocking and rolling...");
+        break;
+  }
+}
 
    private void updateX() {
      translateX.setTransform(Mat4Transform.translate(xPosition,0,0));
@@ -177,6 +200,12 @@ public class MainGLEventListener implements GLEventListener {
     floor.render(gl);
     updateBranches();
     twoBranchRoot.draw(gl);
+
+    if (animation != AnimationSelection.None) {
+      animate();
+    } else {
+      System.out.println("Not animating");
+    }
   }
 
   private void updateBranches() {
