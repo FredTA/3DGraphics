@@ -21,9 +21,9 @@ public class MainGLEventListener implements GLEventListener {
 
   private AnimationSelection animation = AnimationSelection.None;
 
-  private boolean rolling = false;
-  private boolean rocking = false;
-  private boolean sliding = false;
+  private TransformNode initialBodyRotation;
+  private TransformNode initialHeadRotation;
+  private TransformNode initialBodyPosition;
 
   public MainGLEventListener(Camera camera) {
     this.camera = camera;
@@ -127,17 +127,20 @@ public class MainGLEventListener implements GLEventListener {
 
     twoBranchRoot = new NameNode("two-branch structure");
 
+    float lowerBranchHeight = 4f;
+
     translateX = new TransformNode("translate("+xPosition+",0,0)", Mat4Transform.translate(xPosition,0,0));
     rotateAll = new TransformNode("rotateAroundZ("+rotateAllAngle+")", Mat4Transform.rotateAroundZ(rotateAllAngle));
+    //initial
     NameNode lowerBranch = new NameNode("lower branch");
 
-    Mat4 m = Mat4Transform.scale(2.5f,4,2.5f);
+    Mat4 m = Mat4Transform.scale(2.5f, lowerBranchHeight, 2.5f);
     m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
 
-    TransformNode makeLowerBranch = new TransformNode("scale(2.5,4,2.5); translate(0,0.5,0)", m);
+    TransformNode makeLowerBranch = new TransformNode("scale(2.5, lowerBranchHeight, 2.5); translate(0,0.5,0)", m);
     ModelNode cube0Node = new ModelNode("Sphere(0)", sphere);
 
-    TransformNode translateToTop = new TransformNode("translate(0,4,0)",Mat4Transform.translate(0,4,0));
+    TransformNode translateToTop = new TransformNode("translate(0, lowerBranchHeight, 0)",Mat4Transform.translate(0, lowerBranchHeight, 0));
     rotateUpper = new TransformNode("rotateAroundZ("+rotateUpperAngle+")",Mat4Transform.rotateAroundZ(rotateUpperAngle));
     NameNode upperBranch = new NameNode("upper branch");
     m = Mat4Transform.scale(1.4f,3.1f,1.4f);
@@ -145,7 +148,7 @@ public class MainGLEventListener implements GLEventListener {
     TransformNode makeUpperBranch = new TransformNode("scale(1.4f,3.1f,1.4f);translate(0,0.5,0)", m);
     ModelNode cube1Node = new ModelNode("Sphere(1)", sphere);
 
-    TransformNode translateToTop2 = new TransformNode("translate(0,4,0)",Mat4Transform.translate(0,4,0));
+    TransformNode translateToTop2 = new TransformNode("translate(0, lowerBranchHeight, 0)",Mat4Transform.translate(0, lowerBranchHeight, 0));
     rotateUpper2 = new TransformNode("rotateAroundZ("+rotateUpperAngle2+")",Mat4Transform.rotateAroundZ(rotateUpperAngle2));
     NameNode upper2Branch = new NameNode("upper 2 branch");
     m = Mat4Transform.scale(1.6f,2.8f,1.6f);
@@ -238,7 +241,16 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   public void reset() {
+    rotateAllAngle = rotateAllAngleStart;
+    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
 
+    rotateUpperAngle = rotateUpperAngleStart;
+    rotateUpperAngle2 = rotateUpperAngleStart;
+
+    rotateUpper.setTransform(Mat4Transform.rotateAroundZ(rotateUpperAngle));
+    rotateUpper2.setTransform(Mat4Transform.rotateAroundZ(rotateUpperAngle2));
+
+    twoBranchRoot.update();
   }
 
   // The light's postion is continually being changed, so needs to be calculated for each frame.
