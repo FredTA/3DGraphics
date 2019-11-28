@@ -69,7 +69,7 @@ public class MainGLEventListener implements GLEventListener {
     GL3 gl = drawable.getGL().getGL3();
     light.dispose(gl);
     floor.dispose(gl);
-    sphere.dispose(gl);
+    snowball.dispose(gl);
   }
 
 
@@ -94,14 +94,14 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, sphere;
+  private Model floor, snowball, nose;
   private Light light;
-  private SGNode twoBranchRoot;
+  private SGNode snowmanRoot;
 
-  private TransformNode translateX, rotateAll, rotateUpper, rotateUpper2;
+  private TransformNode translateX, rotateAll, rotateHead;
   private float xPosition = 0;
-  private float rotateAllAngleStart = 25, rotateAllAngle = rotateAllAngleStart;
-  private float rotateUpperAngleStart = -60, rotateUpperAngle = rotateUpperAngleStart, rotateUpperAngle2 = rotateUpperAngleStart;
+  private float rotateAllAngleStart = 0, rotateAllAngle = rotateAllAngleStart;
+  private float rotateHeadAngleStart = 0, rotateHeadAngle = rotateHeadAngleStart;
 
   private void initialise(GL3 gl) {
     createRandomNumbers();
@@ -112,67 +112,86 @@ public class MainGLEventListener implements GLEventListener {
     light = new Light(gl);
     light.setCamera(camera);
 
+    //-----------Floor--------------------
+
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     Shader shader = new Shader(gl, "vs_tt.txt", "fs_tt.txt");
     Material material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     Mat4 modelMatrix = Mat4Transform.scale(16,1f,16);
     floor = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId0);
 
+
+    //------------Body & Head--------------
+
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     //modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0)); Not using this, so lets just set this to the identity matrix instead
     modelMatrix = new Mat4(1);
-    sphere = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1, textureId2);
+    snowball = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1, textureId2);
 
-    twoBranchRoot = new NameNode("two-branch structure");
+    //------------Nose---------------
 
-    float lowerBranchHeight = 4f;
+    //mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
+    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
+    //modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0)); Not using this, so lets just set this to the identity matrix instead
+    modelMatrix = new Mat4(1);
+    nose = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1, textureId2); //TODO change texture
+
+   //------------------------------Making the snoman---------------------------
+
+    snowmanRoot = new NameNode("snowman structure");
+    float bodyDiameter = 4f;
+    float headDiameter = 2.5f;
+
+    //------------------Body----------------------
 
     translateX = new TransformNode("translate("+xPosition+",0,0)", Mat4Transform.translate(xPosition,0,0));
     rotateAll = new TransformNode("rotateAroundZ("+rotateAllAngle+")", Mat4Transform.rotateAroundZ(rotateAllAngle));
-    //initial
-    NameNode lowerBranch = new NameNode("lower branch");
+    NameNode body = new NameNode("Body");
+    Mat4 m = Mat4Transform.scale(bodyDiameter, bodyDiameter, bodyDiameter);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, 0.5f, 0));
+    //Mat4 m = Mat4Transform.translate(0, bodyDiameter / 2, 0);
+    //m = Mat4.multiply(m, Mat4Transform.scale(bodyDiameter, bodyDiameter, bodyDiameter));
+    TransformNode makeBody = new TransformNode("Scale to body size and move up", m);
+    ModelNode bodyNode = new ModelNode("Body", snowball);
 
-    Mat4 m = Mat4Transform.scale(2.5f, lowerBranchHeight, 2.5f);
-    m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
+    //---------------------Head-----------------
 
-    TransformNode makeLowerBranch = new TransformNode("scale(2.5, lowerBranchHeight, 2.5); translate(0,0.5,0)", m);
-    ModelNode cube0Node = new ModelNode("Sphere(0)", sphere);
+    TransformNode translateToTop = new TransformNode("translate(0, bodyDiameter, 0)",Mat4Transform.translate(0, bodyDiameter, 0));
+    rotateHead = new TransformNode("rotateAroundZ("+rotateHeadAngle+")",Mat4Transform.rotateAroundZ(rotateHeadAngle));
+    NameNode head = new NameNode("Head");
+    m = Mat4Transform.scale(headDiameter, headDiameter, headDiameter);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, 0.4f, 0)); //TODO comment
+    TransformNode makeHead = new TransformNode("scale(1.4f,1.4f,1.4f);translate(0,0.5,0)", m);
+    ModelNode headNode = new ModelNode("Head", snowball);
 
-    TransformNode translateToTop = new TransformNode("translate(0, lowerBranchHeight, 0)",Mat4Transform.translate(0, lowerBranchHeight, 0));
-    rotateUpper = new TransformNode("rotateAroundZ("+rotateUpperAngle+")",Mat4Transform.rotateAroundZ(rotateUpperAngle));
-    NameNode upperBranch = new NameNode("upper branch");
-    m = Mat4Transform.scale(1.4f,3.1f,1.4f);
-    m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
-    TransformNode makeUpperBranch = new TransformNode("scale(1.4f,3.1f,1.4f);translate(0,0.5,0)", m);
-    ModelNode cube1Node = new ModelNode("Sphere(1)", sphere);
+    //-------------------Nose-------------------
 
-    TransformNode translateToTop2 = new TransformNode("translate(0, lowerBranchHeight, 0)",Mat4Transform.translate(0, lowerBranchHeight, 0));
-    rotateUpper2 = new TransformNode("rotateAroundZ("+rotateUpperAngle2+")",Mat4Transform.rotateAroundZ(rotateUpperAngle2));
-    NameNode upper2Branch = new NameNode("upper 2 branch");
-    m = Mat4Transform.scale(1.6f,2.8f,1.6f);
-    m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
-    TransformNode makeUpper2Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
-    ModelNode cube2Node = new ModelNode("Sphere(2)", sphere);
+    // TransformNode translateToTop2 = new TransformNode("translate(0, bodyDiameter, 0)",Mat4Transform.translate(0, bodyDiameter, 0));
+    // NameNode nose = new NameNode("Nose");
+    // m = Mat4Transform.scale(1.6f,2.8f,1.6f);
+    // m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
+    // TransformNode makeNoseBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    // ModelNode noseNode = new ModelNode("Nose", snowball);
 
-    twoBranchRoot.addChild(translateX);
+    snowmanRoot.addChild(translateX);
       translateX.addChild(rotateAll);
-        rotateAll.addChild(lowerBranch);
-          lowerBranch.addChild(makeLowerBranch);
-            makeLowerBranch.addChild(cube0Node);
-          lowerBranch.addChild(translateToTop);
-            translateToTop.addChild(rotateUpper);
-              rotateUpper.addChild(upperBranch);
-                upperBranch.addChild(makeUpperBranch);
-                  makeUpperBranch.addChild(cube1Node);
-          lowerBranch.addChild(translateToTop2);
-            translateToTop2.addChild(rotateUpper2);
-              rotateUpper2.addChild(upper2Branch);
-                upper2Branch.addChild(makeUpper2Branch);
-                  makeUpper2Branch.addChild(cube2Node);
-    twoBranchRoot.update();  // IMPORTANT – must be done every time any part of the scene graph changes
-    //twoBranchRoot.print(0, false);
+        rotateAll.addChild(body);
+          body.addChild(makeBody);
+            makeBody.addChild(bodyNode);
+         body.addChild(translateToTop);
+           translateToTop.addChild(rotateHead);
+             rotateHead.addChild(head);
+               head.addChild(makeHead);
+                 makeHead.addChild(headNode);
+//              head.addChild(translateToTop2);
+//                translateToTop2.addChild(nose);
+//                  nose.addChild(makeNoseBranch);
+//                    makeNoseBranch.addChild(noseNode);
+    snowmanRoot.update();  // IMPORTANT – must be done every time any part of the scene graph changes
+    //snowman.print(0, false);
     //System.exit(0);
   }
 
@@ -182,7 +201,7 @@ public class MainGLEventListener implements GLEventListener {
     light.render(gl);
     floor.render(gl);
     //updateBranches();
-    twoBranchRoot.draw(gl);
+    snowmanRoot.draw(gl);
 
     if (animation != AnimationSelection.None) {
       animate();
@@ -212,7 +231,7 @@ public class MainGLEventListener implements GLEventListener {
         slide();
         break;
     }
-    twoBranchRoot.update(); // IMPORTANT – the scene graph has changed
+    snowmanRoot.update(); // IMPORTANT – the scene graph has changed
   }
 
    private void updateX() {
@@ -222,18 +241,17 @@ public class MainGLEventListener implements GLEventListener {
 
   private void rock() {
     double elapsedTime = getSeconds()-startTime;
-    rotateAllAngle = rotateAllAngleStart*(float)Math.sin(elapsedTime * 3);
+    rotateAllAngle = rotateAllAngleStart*(float)Math.sin(elapsedTime * 3); //TODO don't times by 0...
     rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
+    System.out.println("ROtate angle is " + rotateAllAngle);
   }
 
   private void roll() {
     double elapsedTime = getSeconds()-startTime;
 
-    rotateUpperAngle = rotateUpperAngleStart*(float)Math.sin(elapsedTime*0.7f);
-    rotateUpperAngle2 = rotateUpperAngleStart*(float)Math.cos(elapsedTime*0.7f);
+    rotateHeadAngle = rotateHeadAngleStart*(float)Math.sin(elapsedTime*0.7f);
 
-    rotateUpper.setTransform(Mat4Transform.rotateAroundZ(rotateUpperAngle));
-    rotateUpper2.setTransform(Mat4Transform.rotateAroundZ(rotateUpperAngle2));
+    rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngle));
   }
 
   private void slide() {
@@ -241,16 +259,12 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   public void reset() {
-    rotateAllAngle = rotateAllAngleStart;
-    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
+    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
+    rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
 
-    rotateUpperAngle = rotateUpperAngleStart;
-    rotateUpperAngle2 = rotateUpperAngleStart;
+    //Reset slide
 
-    rotateUpper.setTransform(Mat4Transform.rotateAroundZ(rotateUpperAngle));
-    rotateUpper2.setTransform(Mat4Transform.rotateAroundZ(rotateUpperAngle2));
-
-    twoBranchRoot.update();
+    snowmanRoot.update();
   }
 
   // The light's postion is continually being changed, so needs to be calculated for each frame.
