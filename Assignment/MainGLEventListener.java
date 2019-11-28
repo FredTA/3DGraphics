@@ -81,30 +81,10 @@ public class MainGLEventListener implements GLEventListener {
 
   public void selectAnimation(AnimationSelection animation) {
     this.animation = animation;
+    if (animation == AnimationSelection.None) {
+      reset();
+    }
   }
-
-  private void animate() {
-    switch(animation) {
-      case Rock :
-        System.out.println("Rocking...");
-        break;
-      case Roll :
-        System.out.println("Rolling...");
-        break;
-      case Slide :
-        System.out.println("Sliding...");
-        break;
-      case SlideRockAndRoll :
-        System.out.println("Sliding, rocking and rolling...");
-        break;
-  }
-}
-
-   private void updateX() {
-     translateX.setTransform(Mat4Transform.translate(xPosition,0,0));
-     translateX.update(); // IMPORTANT – the scene graph has changed
-   }
-
 
   // ***************************************************
   /* THE SCENE
@@ -198,7 +178,7 @@ public class MainGLEventListener implements GLEventListener {
     light.setPosition(getLightPosition());  // changing light position each frame
     light.render(gl);
     floor.render(gl);
-    updateBranches();
+    //updateBranches();
     twoBranchRoot.draw(gl);
 
     if (animation != AnimationSelection.None) {
@@ -208,15 +188,57 @@ public class MainGLEventListener implements GLEventListener {
     }
   }
 
-  private void updateBranches() {
+  private void animate() {
+    switch(animation) {
+      case Rock :
+        System.out.println("Rocking...");
+        rock();
+        break;
+      case Roll :
+        roll();
+        System.out.println("Rolling...");
+        break;
+      case Slide :
+        slide();
+        System.out.println("Sliding...");
+        break;
+      case SlideRockAndRoll :
+        System.out.println("Sliding, rocking and rolling...");
+        rock();
+        roll();
+        slide();
+        break;
+    }
+    twoBranchRoot.update(); // IMPORTANT – the scene graph has changed
+  }
+
+   private void updateX() {
+     translateX.setTransform(Mat4Transform.translate(xPosition,0,0));
+     translateX.update(); // IMPORTANT – the scene graph has changed
+   }
+
+  private void rock() {
     double elapsedTime = getSeconds()-startTime;
     rotateAllAngle = rotateAllAngleStart*(float)Math.sin(elapsedTime * 3);
+    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
+  }
+
+  private void roll() {
+    double elapsedTime = getSeconds()-startTime;
+
     rotateUpperAngle = rotateUpperAngleStart*(float)Math.sin(elapsedTime*0.7f);
     rotateUpperAngle2 = rotateUpperAngleStart*(float)Math.cos(elapsedTime*0.7f);
-    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
+
     rotateUpper.setTransform(Mat4Transform.rotateAroundZ(rotateUpperAngle));
     rotateUpper2.setTransform(Mat4Transform.rotateAroundZ(rotateUpperAngle2));
-    twoBranchRoot.update(); // IMPORTANT – the scene graph has changed
+  }
+
+  private void slide() {
+
+  }
+
+  public void reset() {
+
   }
 
   // The light's postion is continually being changed, so needs to be calculated for each frame.
