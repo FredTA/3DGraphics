@@ -81,6 +81,7 @@ public class MainGLEventListener implements GLEventListener {
 
   public void selectAnimation(AnimationSelection animation) {
     this.animation = animation;
+    startTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
     if (animation == AnimationSelection.None) {
       reset();
     }
@@ -102,6 +103,16 @@ public class MainGLEventListener implements GLEventListener {
   private float xPosition = 0;
   private float rotateAllAngleStart = 0, rotateAllAngle = rotateAllAngleStart;
   private float rotateHeadAngleStart = 0, rotateHeadAngle = rotateHeadAngleStart;
+
+  private float maxRotationAllAngle = 35f;
+  private float maximumRotationSpeed = 1.15f;
+  private float rotationAcceleration = 0.01f;
+  private float currentRotationSpeed = 0;
+
+  private float bodyDiameter = 4f;
+  private float bodyToHeadRatio = 1.8f;
+  private float headDiameter = bodyDiameter / bodyToHeadRatio;
+
 
   private void initialise(GL3 gl) {
     createRandomNumbers();
@@ -142,8 +153,6 @@ public class MainGLEventListener implements GLEventListener {
    //------------------------------Making the snoman---------------------------
 
     snowmanRoot = new NameNode("snowman structure");
-    float bodyDiameter = 4f;
-    float headDiameter = 2.5f;
 
     //------------------Body----------------------
 
@@ -241,7 +250,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private void rock() {
     double elapsedTime = getSeconds()-startTime;
-    rotateAllAngle = rotateAllAngleStart*(float)Math.sin(elapsedTime * 3); //TODO don't times by 0...
+    rotateAllAngle = maxRotationAllAngle*(float)Math.sin(elapsedTime); //TODO don't times by 0...
     rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
     System.out.println("ROtate angle is " + rotateAllAngle);
   }
@@ -261,7 +270,7 @@ public class MainGLEventListener implements GLEventListener {
   public void reset() {
     rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
     rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
-
+    currentRotationSpeed = 0;
     //Reset slide
 
     snowmanRoot.update();
