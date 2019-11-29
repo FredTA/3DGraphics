@@ -142,7 +142,7 @@ public class MainGLEventListener implements GLEventListener {
   private void initialise(GL3 gl) {
     createRandomNumbers();
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
-    int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/jade.jpg");
+    int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/snow.jpg");
     int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
 
     light = new Light(gl);
@@ -161,10 +161,9 @@ public class MainGLEventListener implements GLEventListener {
 
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
-    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
-    //modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0)); Not using this, so lets just set this to the identity matrix instead
+    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
     modelMatrix = new Mat4(1);
-    snowball = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1, textureId2);
+    snowball = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1);
 
     //------------Nose---------------
 
