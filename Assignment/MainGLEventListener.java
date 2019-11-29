@@ -121,8 +121,9 @@ public class MainGLEventListener implements GLEventListener {
   private Light light;
   private SGNode snowmanRoot;
 
-  private TransformNode translateX, rotateAll, rotateHead;
+  private TransformNode translateX, rotateAll, translateHead, rotateHead;
   private float xPositionStart = 0, xPosition = xPositionStart;
+  private Vec3 headPosition, headPositionStart;
   private float rotateAllAngleStart = 0, rotateAllAngle = rotateAllAngleStart;
   private float rotateHeadAngleStart = 0, rotateHeadAngle = rotateHeadAngleStart;
 
@@ -130,9 +131,9 @@ public class MainGLEventListener implements GLEventListener {
   private float rotationRampTime = 0.01f; //The time it takes for the animation to start or stop
   private float currentRotationSpeed = 0;
 
-  private float bodyDiameter = 3.5f;
-  private float bodyToHeadRatio = 1.6f;
-  private float headDiameter = bodyDiameter / bodyToHeadRatio;
+  private static final float BODY_DIAMETER = 3.5f;
+  private static final float BODY_TO_HEAD_RATIO = 1.6f;
+  private static final float HEAD_DIAMETER = BODY_DIAMETER / BODY_TO_HEAD_RATIO;
 
 
   private void initialise(GL3 gl) {
@@ -180,26 +181,28 @@ public class MainGLEventListener implements GLEventListener {
     translateX = new TransformNode("translate("+xPosition+",0,0)", Mat4Transform.translate(xPosition,0,0));
     rotateAll = new TransformNode("rotateAroundZ("+rotateAllAngle+")", Mat4Transform.rotateAroundZ(rotateAllAngle));
     NameNode body = new NameNode("Body");
-    Mat4 m = Mat4Transform.scale(bodyDiameter, bodyDiameter, bodyDiameter);
+    Mat4 m = Mat4Transform.scale(BODY_DIAMETER, BODY_DIAMETER, BODY_DIAMETER);
     m = Mat4.multiply(m, Mat4Transform.translate(0, 0.5f, 0));
-    //Mat4 m = Mat4Transform.translate(0, bodyDiameter / 2, 0);
-    //m = Mat4.multiply(m, Mat4Transform.scale(bodyDiameter, bodyDiameter, bodyDiameter));
+    //Mat4 m = Mat4Transform.translate(0, BODY_DIAMETER / 2, 0);
+    //m = Mat4.multiply(m, Mat4Transform.scale(BODY_DIAMETER, BODY_DIAMETER, BODY_DIAMETER));
     TransformNode makeBody = new TransformNode("Scale to body size and move up", m);
     ModelNode bodyNode = new ModelNode("Body", snowball);
 
     //---------------------Head-----------------
 
-    TransformNode translateToTop = new TransformNode("translate(0, bodyDiameter, 0)",Mat4Transform.translate(0, bodyDiameter, 0));
-    rotateHead = new TransformNode("rotateAroundZ("+rotateHeadAngle+")",Mat4Transform.rotateAroundZ(rotateHeadAngle));
+    headPosition = new Vec3(0, BODY_DIAMETER, 0);
+    headPositionStart = headPosition;
+    translateHead = new TransformNode("translate(0, BODY_DIAMETER, 0)", Mat4Transform.translate(headPosition.x, headPosition.y, headPosition.z));
+    rotateHead = new TransformNode("rotateAroundZ("+rotateHeadAngle+")", Mat4Transform.rotateAroundZ(rotateHeadAngle));
     NameNode head = new NameNode("Head");
-    m = Mat4Transform.scale(headDiameter, headDiameter, headDiameter);
+    m = Mat4Transform.scale(HEAD_DIAMETER, HEAD_DIAMETER, HEAD_DIAMETER);
     m = Mat4.multiply(m, Mat4Transform.translate(0, 0.4f, 0)); //TODO comment
     TransformNode makeHead = new TransformNode("scale(1.4f,1.4f,1.4f);translate(0,0.5,0)", m);
     ModelNode headNode = new ModelNode("Head", snowball);
 
     //-------------------Nose-------------------
 
-    // TransformNode translateToTop2 = new TransformNode("translate(0, bodyDiameter, 0)",Mat4Transform.translate(0, bodyDiameter, 0));
+    // TransformNode translateHead2 = new TransformNode("translate(0, BODY_DIAMETER, 0)",Mat4Transform.translate(0, BODY_DIAMETER, 0));
     // NameNode nose = new NameNode("Nose");
     // m = Mat4Transform.scale(1.6f,2.8f,1.6f);
     // m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
@@ -211,13 +214,13 @@ public class MainGLEventListener implements GLEventListener {
         rotateAll.addChild(body);
           body.addChild(makeBody);
             makeBody.addChild(bodyNode);
-         body.addChild(translateToTop);
-           translateToTop.addChild(rotateHead);
+         body.addChild(translateHead);
+           translateHead.addChild(rotateHead);
              rotateHead.addChild(head);
                head.addChild(makeHead);
                  makeHead.addChild(headNode);
-//              head.addChild(translateToTop2);
-//                translateToTop2.addChild(nose);
+//              head.addChild(translateHead2);
+//                translateHead2.addChild(nose);
 //                  nose.addChild(makeNoseBranch);
 //                    makeNoseBranch.addChild(noseNode);
     snowmanRoot.update();  // IMPORTANT – must be done every time any part of the scene graph changes
@@ -233,35 +236,29 @@ public class MainGLEventListener implements GLEventListener {
     //updateBranches();
     snowmanRoot.draw(gl);
 
-    handleAnimations();
+    if (currentAnimation != AnimationSelections.None) {
+      handleAnimations();
+    }
   }
 
   private void handleAnimations() {
-    //If there is a pending animation, and the current one has stopped...
-    if (pendingAnimation != AnimationSelections.None && stopTime == -1) {
-      currentAnimation = pendingAnimation;
-      pendingAnimation = AnimationSelections.None;
+    switch(currentAnimation) {
+      case Rock :
+        rock();
+        break;
+      case Roll :
+        roll();
+        break;
+      case Slide :
+        slide();
+        break;
+      case SlideRockAndRoll :
+        rock();
+        roll();
+        slide();
+        break;
     }
-
-    if (currentAnimation != AnimationSelections.None) {
-      switch(currentAnimation) {
-        case Rock :
-          rock();
-          break;
-        case Roll :
-          roll();
-          break;
-        case Slide :
-          slide();
-          break;
-        case SlideRockAndRoll :
-          rock();
-          roll();
-          slide();
-          break;
-      }
-      snowmanRoot.update(); // IMPORTANT – the scene graph has changed
-    }
+    snowmanRoot.update(); // IMPORTANT – the scene graph has changed
   }
 
   private void rock() {
@@ -281,12 +278,15 @@ public class MainGLEventListener implements GLEventListener {
     }
   }
 
-  //TODO roll should also slide the head around the body
   private void roll() {
     double elapsedTime = getSeconds()-startTime;
 
+    //We do the translations in two goes, so that the rotation occurs from the centre of the body
     rotateHeadAngle = MAX_ROTATION_HEAD_ANGLE * (float)Math.sin(elapsedTime);
-    rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngle));
+    Mat4 translateRadius = Mat4Transform.translate(0, BODY_DIAMETER / 2, 0);
+    Mat4 m = Mat4.multiply(Mat4Transform.rotateAroundZ(rotateHeadAngle), translateRadius);
+    m = Mat4.multiply(translateRadius, m);
+    translateHead.setTransform(m);
 
     //If we're stopping the animation
     if (stopTime != -1) {
@@ -319,18 +319,25 @@ public class MainGLEventListener implements GLEventListener {
 
 
   public void reset() {
-    //TODO bottom two lines shouldn't be needed
-    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
-    rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
+    //We don't actually need to do any transformations here, as the animations only stop once they are back in their start position
+
+    //rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
+    //rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
+    //translateHead.setTransform(Mat4Transform.translate(headPositionStart));
+
     stopTime = -1;
-    currentRotationSpeed = 0;
-    //Reset slide
+    //currentRotationSpeed = 0;
 
     System.out.println("Resetting...");
 
-    currentAnimation = AnimationSelections.None;
+    if (pendingAnimation != AnimationSelections.None) {
+      currentAnimation = pendingAnimation;
+      pendingAnimation = AnimationSelections.None;
+    } else {
+      currentAnimation = AnimationSelections.None;
+    }
 
-    snowmanRoot.update();
+    //snowmanRoot.update();
   }
 
   // The light's postion is continually being changed, so needs to be calculated for each frame.
