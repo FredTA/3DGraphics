@@ -22,10 +22,13 @@ public class MainGLEventListener implements GLEventListener {
   private AnimationSelections currentAnimation = AnimationSelections.None;
   private AnimationSelections pendingAnimation = AnimationSelections.None;
 
-  private static final float ANIMATION_STOP_BOUNDS = 0.5f;
+  private static final float ROTATION_STOP_BOUNDS = 0.5f;
   private static final float MAX_ROTATION_ALL_ANGLE = 35f;
-
   private static final float MAX_ROTATION_HEAD_ANGLE = 35f;
+
+  private static final float SLIDE_STOP_BOUNDS = 0.1f;
+  private static final float MAX_SLIDE_POSITION = 2f;
+
 
   private TransformNode initialBodyRotation;
   private TransformNode initialHeadRotation;
@@ -119,7 +122,7 @@ public class MainGLEventListener implements GLEventListener {
   private SGNode snowmanRoot;
 
   private TransformNode translateX, rotateAll, rotateHead;
-  private float xPosition = 0;
+  private float xPositionStart = 0, xPosition = xPositionStart;
   private float rotateAllAngleStart = 0, rotateAllAngle = rotateAllAngleStart;
   private float rotateHeadAngleStart = 0, rotateHeadAngle = rotateHeadAngleStart;
 
@@ -261,15 +264,10 @@ public class MainGLEventListener implements GLEventListener {
     }
   }
 
-   private void updateX() {
-     translateX.setTransform(Mat4Transform.translate(xPosition,0,0));
-     translateX.update(); // IMPORTANT – the scene graph has changed
-   }
-
   private void rock() {
     double elapsedTime = getSeconds()-startTime;
 
-    rotateAllAngle = MAX_ROTATION_ALL_ANGLE*(float)Math.sin(elapsedTime);
+    rotateAllAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.sin(elapsedTime);
     rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
     //System.out.println("ROtate angle is " + rotateAllAngle);
 
@@ -277,31 +275,48 @@ public class MainGLEventListener implements GLEventListener {
     if (stopTime != -1) {
       System.out.println("Looking to stop");
       //If the current rotation is within the stop bounds
-      if (rotateAllAngle > rotateAllAngleStart - ANIMATION_STOP_BOUNDS && rotateAllAngle < rotateAllAngleStart + ANIMATION_STOP_BOUNDS) {
+      if (rotateAllAngle > rotateAllAngleStart - ROTATION_STOP_BOUNDS && rotateAllAngle < rotateAllAngleStart + ROTATION_STOP_BOUNDS) {
         reset();
       }
     }
   }
 
+  //TODO roll should also slide the head around the body
   private void roll() {
     double elapsedTime = getSeconds()-startTime;
 
-    rotateHeadAngle = MAX_ROTATION_HEAD_ANGLE*(float)Math.sin(elapsedTime);
+    rotateHeadAngle = MAX_ROTATION_HEAD_ANGLE * (float)Math.sin(elapsedTime);
     rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngle));
 
     //If we're stopping the animation
     if (stopTime != -1) {
       System.out.println("Looking to stop");
       //If the current rotation is within the stop bounds
-      if (rotateHeadAngle > rotateHeadAngleStart - ANIMATION_STOP_BOUNDS && rotateHeadAngle < rotateHeadAngleStart + ANIMATION_STOP_BOUNDS) {
+      if (rotateHeadAngle > rotateHeadAngleStart - ROTATION_STOP_BOUNDS && rotateHeadAngle < rotateHeadAngleStart + ROTATION_STOP_BOUNDS) {
         reset();
       }
     }
   }
 
   private void slide() {
+    double elapsedTime = getSeconds()-startTime;
 
+    xPosition = MAX_SLIDE_POSITION * (float)Math.sin(elapsedTime);
+    translateX.setTransform(Mat4Transform.translate(xPosition,0,0));
+    //translateX.update(); // IMPORTANT – the scene graph has changed
+
+    System.out.println("Current slide is... " + translateX);
+
+    //If we're stopping the animation
+    if (stopTime != -1) {
+      System.out.println("Looking to stop");
+      //If the current rotation is within the stop bounds
+      if (xPosition > xPositionStart - SLIDE_STOP_BOUNDS && xPosition < xPositionStart + SLIDE_STOP_BOUNDS) {
+        reset();
+      }
+    }
   }
+
 
   public void reset() {
     //TODO bottom two lines shouldn't be needed
@@ -333,6 +348,7 @@ public class MainGLEventListener implements GLEventListener {
    */
 
   private double startTime;
+  //TODO change to boolean we don't slow down
   private double stopTime = -1; //-1 indicates that we are not stopping
 
   private double getSeconds() {
