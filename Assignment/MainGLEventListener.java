@@ -21,6 +21,8 @@ public class MainGLEventListener implements GLEventListener {
 
   private AnimationSelection animation = AnimationSelection.None;
 
+  private static final float ANIMATION_STOP_BOUNDS = 0.5f;
+
   private TransformNode initialBodyRotation;
   private TransformNode initialHeadRotation;
   private TransformNode initialBodyPosition;
@@ -80,10 +82,12 @@ public class MainGLEventListener implements GLEventListener {
    */
 
   public void selectAnimation(AnimationSelection animation) {
-    this.animation = animation;
-    startTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
     if (animation == AnimationSelection.None) {
-      reset();
+      //reset();
+      stopTime = getSeconds(); //This triggers the animations to stop
+    } else {
+      this.animation = animation;
+      startTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
     }
   }
 
@@ -106,7 +110,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private float maxRotationAllAngle = 35f;
   private float maximumRotationSpeed = 1.15f;
-  private float rotationAcceleration = 0.01f;
+  private float rotationRampTime = 0.01f; //The time it takes for the animation to start or stop
   private float currentRotationSpeed = 0;
 
   private float bodyDiameter = 4f;
@@ -250,9 +254,19 @@ public class MainGLEventListener implements GLEventListener {
 
   private void rock() {
     double elapsedTime = getSeconds()-startTime;
-    rotateAllAngle = maxRotationAllAngle*(float)Math.sin(elapsedTime); //TODO don't times by 0...
+
+    rotateAllAngle = maxRotationAllAngle*(float)Math.sin(elapsedTime);
     rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
-    System.out.println("ROtate angle is " + rotateAllAngle);
+    //System.out.println("ROtate angle is " + rotateAllAngle);
+
+    //If we're stopping the animation
+    if (stopTime != -1) {
+      System.out.println("Looking to stop");
+      //If the current rotation is within the stop bounds
+      if (rotateAllAngle > rotateAllAngleStart - ANIMATION_STOP_BOUNDS && rotateAllAngle < rotateAllAngleStart + ANIMATION_STOP_BOUNDS) {
+        reset();
+      }
+    }
   }
 
   private void roll() {
@@ -268,10 +282,16 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   public void reset() {
+    //TODO bottom two lines shouldn't be needed
     rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
     rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
+    stopTime = -1;
     currentRotationSpeed = 0;
     //Reset slide
+
+    System.out.println("Resetting...");
+
+    animation = AnimationSelection.None;
 
     snowmanRoot.update();
   }
@@ -291,6 +311,7 @@ public class MainGLEventListener implements GLEventListener {
    */
 
   private double startTime;
+  private double stopTime = -1; //-1 indicates that we are not stopping
 
   private double getSeconds() {
     return System.currentTimeMillis()/1000.0;
