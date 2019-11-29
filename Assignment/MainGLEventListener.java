@@ -118,7 +118,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, nose;
+  private Model floor, snowball, smoothStone;
   private Light light;
   private SGNode snowmanRoot;
 
@@ -137,6 +137,10 @@ public class MainGLEventListener implements GLEventListener {
   private static final float BODY_DIAMETER = 3.5f;
   private static final float BODY_TO_HEAD_RATIO = 1.6f;
   private static final float HEAD_DIAMETER = BODY_DIAMETER / BODY_TO_HEAD_RATIO;
+  private static final float HEAD_TO_NOSE_RATIO = 6.7f;
+  private static final float NOSE_LENGTH_RATIO = 0.45f;
+  private static final float NOSE_SIZE = HEAD_DIAMETER / HEAD_TO_NOSE_RATIO;
+  private static final float NOSE_LENGTH = NOSE_SIZE / NOSE_LENGTH_RATIO;
 
 
   private void initialise(GL3 gl) {
@@ -144,6 +148,8 @@ public class MainGLEventListener implements GLEventListener {
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
     int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/snow.jpg");
     int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
+    int[] stoneRoughTexture = TextureLibrary.loadTexture(gl, "textures/stone.jpg");
+    int[] stoneSmoothTexture = TextureLibrary.loadTexture(gl, "textures/stoneSmooth.jpg");
 
     light = new Light(gl);
     light.setCamera(camera);
@@ -165,14 +171,14 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = new Mat4(1);
     snowball = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1);
 
-    //------------Nose---------------
+    //------------Nose & Mouth---------------
 
     //mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     //modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0)); Not using this, so lets just set this to the identity matrix instead
     modelMatrix = new Mat4(1);
-    nose = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1, textureId2); //TODO change texture
+    smoothStone = new Model(gl, camera, light, shader, material, modelMatrix, mesh, stoneSmoothTexture);
 
    //------------------------------Making the snoman---------------------------
 
@@ -204,12 +210,12 @@ public class MainGLEventListener implements GLEventListener {
 
     //-------------------Nose-------------------
 
-    // TransformNode translateHead2 = new TransformNode("translate(0, BODY_DIAMETER, 0)",Mat4Transform.translate(0, BODY_DIAMETER, 0));
-    // NameNode nose = new NameNode("Nose");
-    // m = Mat4Transform.scale(1.6f,2.8f,1.6f);
-    // m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
-    // TransformNode makeNoseBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
-    // ModelNode noseNode = new ModelNode("Nose", snowball);
+    TransformNode translateHead2 = new TransformNode("translate(0, BODY_DIAMETER, 0)",Mat4Transform.translate(0, (HEAD_DIAMETER / 2) - NOSE_SIZE , HEAD_DIAMETER / 2));
+    NameNode nose = new NameNode("Nose");
+    m = Mat4Transform.scale(NOSE_SIZE, NOSE_SIZE, NOSE_LENGTH);
+    m = Mat4.multiply(m, Mat4Transform.translate(0,0.4f,0));
+    TransformNode makeNoseBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode noseNode = new ModelNode("Nose", smoothStone);
 
     snowmanRoot.addChild(translateX);
       translateX.addChild(rotateAll);
@@ -221,10 +227,10 @@ public class MainGLEventListener implements GLEventListener {
              rotateHead.addChild(head);
                head.addChild(makeHead);
                  makeHead.addChild(headNode);
-//              head.addChild(translateHead2);
-//                translateHead2.addChild(nose);
-//                  nose.addChild(makeNoseBranch);
-//                    makeNoseBranch.addChild(noseNode);
+             head.addChild(translateHead2);
+               translateHead2.addChild(nose);
+                 nose.addChild(makeNoseBranch);
+                   makeNoseBranch.addChild(noseNode);
     snowmanRoot.update();  // IMPORTANT – must be done every time any part of the scene graph changes
     //snowman.print(0, false);
     //System.exit(0);
