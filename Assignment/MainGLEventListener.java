@@ -22,7 +22,7 @@ public class MainGLEventListener implements GLEventListener {
   private AnimationSelections currentAnimation = AnimationSelections.None;
   private AnimationSelections pendingAnimation = AnimationSelections.None;
 
-  private static final float ROTATION_STOP_BOUNDS = 0.5f;
+  private static final float ROTATION_STOP_BOUNDS = 0.4f;
   private static final float MAX_ROTATION_ALL_ANGLE = 35f;
   private static final float MAX_ROTATION_HEAD_ANGLE = 35f;
 
@@ -341,22 +341,53 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   private void rock() {
-    //double elapsedTime = getSeconds()-startTime;
-
-    rotateAllAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
-    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
-    System.out.println("ROtate angle is " + rotateAllAngle);
-
-        //System.out.println("ET " + elapsedTime + "RT = " + rotateAllAngle);
 
     //If we're stopping the animation
     if (stopTime != -1) {
       System.out.println("Looking to stop");
       //If the current rotation is within the stop bounds
+      float rotateAllXAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.cos(elapsedTime) * currentAnimationSpeed;
       if (rotateAllAngle > rotateAllAngleStart - ROTATION_STOP_BOUNDS && rotateAllAngle < rotateAllAngleStart + ROTATION_STOP_BOUNDS) {
-        reset();
+        if (rotateAllXAngle > rotateAllAngleStart - ROTATION_STOP_BOUNDS && rotateAllXAngle < rotateAllAngleStart + ROTATION_STOP_BOUNDS) {
+          //If both x and z are within bounds, we can stop rocking and reset
+          reset();
+        } else {
+          //If Z is in bounds but X isn't keep moving x
+          rotateAll.setTransform(Mat4Transform.rotateAroundX(rotateAllXAngle));
+          System.out.println("ROtate angle is " + rotateAllAngle + " - " + rotateAllXAngle);
+        }
+      } else {
+        if (rotateAllXAngle > rotateAllAngleStart - ROTATION_STOP_BOUNDS && rotateAllXAngle < rotateAllAngleStart + ROTATION_STOP_BOUNDS) {
+          //If we're not in Z bounds, but are in X, keep moving Z
+          float rotateAllAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
+          rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
+          System.out.println("ROtate angle is " + rotateAllAngle + " - " + rotateAllXAngle);
+        } else {
+          //If we are stopping, but in the bounds of neither
+          rockBothAxis();
+        }
       }
+    } else {
+      //If we are not stopping
+      rockBothAxis();
     }
+    System.out.println("DOOT " + elapsedTime + " - " + (float)Math.sin(elapsedTime));
+  }
+
+  private void rockBothAxis() {
+    if (elapsedTime > 1.565f) {
+      rotateAllAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
+      float rotateAllXAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.cos(elapsedTime) * currentAnimationSpeed;
+      Mat4 m = Mat4Transform.rotateAroundZ(rotateAllAngle);
+      m = Mat4.multiply(m, Mat4Transform.rotateAroundX(rotateAllXAngle));
+      rotateAll.setTransform(m);
+      //System.out.println("ROtate angle is " + rotateAllAngle + " - " + rotateAllXAngle);
+    } else {
+      float rotateAllAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
+      rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
+      //System.out.println("ROtate angle is " + rotateAllAngle + " - " + rotateAllXAngle);
+    }
+
   }
 
   private void roll() {
@@ -402,9 +433,9 @@ public class MainGLEventListener implements GLEventListener {
   public void reset() {
     //We don't actually need to do any transformations here, as the animations only stop once they are back in their start position
 
-    //rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
-    //rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
-    //translateHead.setTransform(Mat4Transform.translate(headPositionStart));
+    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
+    rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
+    translateHead.setTransform(Mat4Transform.translate(headPositionStart));
 
     stopTime = -1;
     lastSinMagnitude = -1;
@@ -425,7 +456,7 @@ public class MainGLEventListener implements GLEventListener {
       currentAnimation = AnimationSelections.None;
     }
 
-    //snowmanRoot.update();
+    snowmanRoot.update();
   }
 
   // The light's postion is continually being changed, so needs to be calculated for each frame.
