@@ -104,7 +104,7 @@ public class MainGLEventListener implements GLEventListener {
         //If an animation was selected, and we aren't already animating
         System.out.println("We should be here...");
         this.currentAnimation = newAnimationSelection;
-        startTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
+        animationStartTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
       }
     }
   }
@@ -127,9 +127,11 @@ public class MainGLEventListener implements GLEventListener {
   private float rotateAllAngleStart = 0, rotateAllAngle = rotateAllAngleStart;
   private float rotateHeadAngleStart = 0, rotateHeadAngle = rotateHeadAngleStart;
 
-  private float maximumRotationSpeed = 1.15f;
-  private float rotationRampTime = 0.01f; //The time it takes for the animation to start or stop
-  private float currentRotationSpeed = 0;
+  private static final float MAXIMUM_ANIMATION_SPEED = 1.15f;
+  private static final float MINIMUM_ANIMATION_SPEED = 0.3f;
+  private static final float ANIMATION_RAMP_UP_TIME = 4f; //The time it takes for the animation to start or stop
+  private static final float ANIMATION_RAMP_DOWN_TIME = 1f;
+  private float currentAnimationSpeed = 0;
 
   private static final float BODY_DIAMETER = 3.5f;
   private static final float BODY_TO_HEAD_RATIO = 1.6f;
@@ -228,6 +230,10 @@ public class MainGLEventListener implements GLEventListener {
     //System.exit(0);
   }
 
+
+  //private double animationStartTime;
+  //private double lastElapsedTime;
+
   private void render(GL3 gl) {
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
     light.setPosition(getLightPosition());  // changing light position each frame
@@ -241,7 +247,31 @@ public class MainGLEventListener implements GLEventListener {
     }
   }
 
+  double elapsedTime;
+
   private void handleAnimations() {
+
+    elapsedTime = getSeconds() - animationStartTime;
+
+      double timeSinceAnimationChange;
+
+      //If we're not at maximum,
+      //If we're not stopping, and not yet at full speed
+      if (stopTime == -1f && currentAnimationSpeed < MAXIMUM_ANIMATION_SPEED) {
+        float animationRampProgress =  (float)elapsedTime / ANIMATION_RAMP_UP_TIME;
+        currentAnimationSpeed = MAXIMUM_ANIMATION_SPEED * animationRampProgress;
+      }
+      //Else if we are stopping, and still above the min speed
+      else if (stopTime != -1f && currentAnimationSpeed > MINIMUM_ANIMATION_SPEED){
+        timeSinceAnimationChange = getSeconds() - stopTime;
+        float animationRampProgress =  (float)timeSinceAnimationChange / ANIMATION_RAMP_DOWN_TIME;
+        //currentAnimationSpeed = MAXIMUM_ANIMATION_SPEED *( 1 - animationRampProgress);
+      }
+
+
+
+    System.out.println("Animation speed is " + currentAnimationSpeed );
+
     switch(currentAnimation) {
       case Rock :
         rock();
@@ -262,9 +292,9 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   private void rock() {
-    double elapsedTime = getSeconds()-startTime;
+    //double elapsedTime = getSeconds()-startTime;
 
-    rotateAllAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.sin(elapsedTime);
+    rotateAllAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
     rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
     //System.out.println("ROtate angle is " + rotateAllAngle);
 
@@ -279,10 +309,10 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   private void roll() {
-    double elapsedTime = getSeconds()-startTime;
+    //double elapsedTime = getSeconds()-startTime;
 
     //We do the translations in two goes, so that the rotation occurs from the centre of the body
-    rotateHeadAngle = MAX_ROTATION_HEAD_ANGLE * (float)Math.sin(elapsedTime);
+    rotateHeadAngle = MAX_ROTATION_HEAD_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
     Mat4 translateRadius = Mat4Transform.translate(0, BODY_DIAMETER / 2, 0);
     Mat4 m = Mat4.multiply(Mat4Transform.rotateAroundZ(rotateHeadAngle), translateRadius);
     m = Mat4.multiply(translateRadius, m);
@@ -299,9 +329,9 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   private void slide() {
-    double elapsedTime = getSeconds()-startTime;
+    //double elapsedTime = getSeconds()-startTime;
 
-    xPosition = MAX_SLIDE_POSITION * (float)Math.sin(elapsedTime);
+    xPosition = MAX_SLIDE_POSITION * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
     translateX.setTransform(Mat4Transform.translate(xPosition,0,0));
     //translateX.update(); // IMPORTANT – the scene graph has changed
 
@@ -326,9 +356,12 @@ public class MainGLEventListener implements GLEventListener {
     //translateHead.setTransform(Mat4Transform.translate(headPositionStart));
 
     stopTime = -1;
+    animationStartTime = getSeconds();
     //currentRotationSpeed = 0;
 
     System.out.println("Resetting...");
+
+    currentAnimationSpeed = 0;
 
     if (pendingAnimation != AnimationSelections.None) {
       currentAnimation = pendingAnimation;
@@ -355,6 +388,7 @@ public class MainGLEventListener implements GLEventListener {
    */
 
   private double startTime;
+  private double animationStartTime = -1;
   //TODO change to boolean we don't slow down
   private double stopTime = -1; //-1 indicates that we are not stopping
 
