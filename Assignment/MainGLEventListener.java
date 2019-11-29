@@ -22,6 +22,9 @@ public class MainGLEventListener implements GLEventListener {
   private AnimationSelection animation = AnimationSelection.None;
 
   private static final float ANIMATION_STOP_BOUNDS = 0.5f;
+  private static final float MAX_ROTATION_ALL_ANGLE = 35f;
+
+  private static final float MAX_ROTATION_HEAD_ANGLE = 35f;
 
   private TransformNode initialBodyRotation;
   private TransformNode initialHeadRotation;
@@ -108,13 +111,12 @@ public class MainGLEventListener implements GLEventListener {
   private float rotateAllAngleStart = 0, rotateAllAngle = rotateAllAngleStart;
   private float rotateHeadAngleStart = 0, rotateHeadAngle = rotateHeadAngleStart;
 
-  private float maxRotationAllAngle = 35f;
   private float maximumRotationSpeed = 1.15f;
   private float rotationRampTime = 0.01f; //The time it takes for the animation to start or stop
   private float currentRotationSpeed = 0;
 
-  private float bodyDiameter = 4f;
-  private float bodyToHeadRatio = 1.8f;
+  private float bodyDiameter = 3.5f;
+  private float bodyToHeadRatio = 1.6f;
   private float headDiameter = bodyDiameter / bodyToHeadRatio;
 
 
@@ -255,7 +257,7 @@ public class MainGLEventListener implements GLEventListener {
   private void rock() {
     double elapsedTime = getSeconds()-startTime;
 
-    rotateAllAngle = maxRotationAllAngle*(float)Math.sin(elapsedTime);
+    rotateAllAngle = MAX_ROTATION_ALL_ANGLE*(float)Math.sin(elapsedTime);
     rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
     //System.out.println("ROtate angle is " + rotateAllAngle);
 
@@ -272,9 +274,17 @@ public class MainGLEventListener implements GLEventListener {
   private void roll() {
     double elapsedTime = getSeconds()-startTime;
 
-    rotateHeadAngle = rotateHeadAngleStart*(float)Math.sin(elapsedTime*0.7f);
-
+    rotateHeadAngle = MAX_ROTATION_HEAD_ANGLE*(float)Math.sin(elapsedTime);
     rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngle));
+
+    //If we're stopping the animation
+    if (stopTime != -1) {
+      System.out.println("Looking to stop");
+      //If the current rotation is within the stop bounds
+      if (rotateHeadAngle > rotateHeadAngleStart - ANIMATION_STOP_BOUNDS && rotateHeadAngle < rotateHeadAngleStart + ANIMATION_STOP_BOUNDS) {
+        reset();
+      }
+    }
   }
 
   private void slide() {
