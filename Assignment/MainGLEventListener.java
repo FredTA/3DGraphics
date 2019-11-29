@@ -25,7 +25,7 @@ public class MainGLEventListener implements GLEventListener {
   private AnimationSelections currentAnimation = AnimationSelections.None;
   private AnimationSelections pendingAnimation = AnimationSelections.None;
 
-  private static final float ROTATION_STOP_BOUNDS = 0.4f;
+  private static final float ROTATION_STOP_BOUNDS = 0.34f;
   private static final float MAX_ROTATION_ALL_ANGLE = 35f;
   private static final float MAX_ROTATION_HEAD_ANGLE = 35f;
 
@@ -93,16 +93,13 @@ public class MainGLEventListener implements GLEventListener {
 
   public void selectAnimation(AnimationSelections newAnimationSelection) {
     if (newAnimationSelection == AnimationSelections.None) {
-      if (stopTime == -1) {
-        //Set the stop time if we aren't already stopping
-        stopTime = getSeconds(); //This triggers the animations to stop
-      }
+      stoppingAnimation = true; //This triggers the animations to stop
     } else {
       System.out.println("Non None selection");
       //If an animation was selected, but we are already animating
       if (currentAnimation != AnimationSelections.None) {
         System.out.println("But we are here...");
-        stopTime = getSeconds(); //This triggers the animations to stop
+        stoppingAnimation = true; //This triggers the animations to stop
         pendingAnimation = newAnimationSelection;
       } else {
         //If an animation was selected, and we aren't already animating
@@ -133,7 +130,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private static final float MAXIMUM_ANIMATION_SPEED = 1.15f;
   private static final float MINIMUM_ANIMATION_SPEED = 0.15f;
-  private static final float ANIMATION_RAMP_UP_TIME = 4f; //The time it takes for the animation to start or stop
+  private static final float ANIMATION_RAMP_UP_TIME = 3f; //The time it takes for the animation to start or stop
   private static final float ANIMATION_RAMP_DOWN_TIME = 2f;
   private float currentAnimationSpeed = 0;
 
@@ -252,78 +249,43 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   private double elapsedTime;
-  private float lastSinMagnitude = -1;
-  private boolean sinMagnitudeIncreasing;
-  private boolean sinDirectionKnown = false;
-  private float sinMagnitudeRemainingInitial = -1;
-  float animationSpeedAtTimeOfStop = -1;
+  private float animationSpeedAtTimeOfStop = -1;
+  private boolean slowingDown = false;
 
-  private void setSinDirection(float sinMagnitude){
-    if (sinMagnitude > lastSinMagnitude) {
-      sinMagnitudeIncreasing = true;
-    } else {
-      sinMagnitudeIncreasing = false;
-    }
-  }
+  private float lastAnimationSpeed = 0;
+
+  private float lastSinMagnitude = -1;
 
   private void handleAnimations() {
 
     elapsedTime = getSeconds() - animationStartTime;
 
       //If we're not stopping, and not yet at full speed
-      if (stopTime == -1f && currentAnimationSpeed < MAXIMUM_ANIMATION_SPEED) {
+      if (!stoppingAnimation && currentAnimationSpeed < MAXIMUM_ANIMATION_SPEED) {
         float animationRampProgress =  (float)elapsedTime / ANIMATION_RAMP_UP_TIME;
         currentAnimationSpeed = MAXIMUM_ANIMATION_SPEED * animationRampProgress;
       }
       //Else if we are stopping, and still above the min speed
-      else if (stopTime != -1f && currentAnimationSpeed > MINIMUM_ANIMATION_SPEED){
-
-        //The below ~35 lines are an attempt to smooth the stoppage of animation
-        //This is tricky as the sin function does not increase at a regular speed
-        //For speeding up the animation, it's easy, because it always starts at 0
-        //However, the user can choose to stop the animation at any point,
-        //Decreasing speed based on time interferes with the shape of the sin wave
-        //Instead, decrease based on distance remaining to the neutral position.
-        //This kind of maths is usually far beyond me, and honestly makes a
-        //pretty small difference in the code, so probably wasn't worth the time
-        //But at least I found it interesting :)
+      else if (stoppingAnimation && currentAnimationSpeed > 0){
 
         float sinMagnitude = Math.abs((float)Math.sin(elapsedTime));
 
-        //We need to know if the snwoman is moving away from or toward the neutral position
-        if (sinDirectionKnown) {
-          float sinMagnitudeRemaining;
-
-          if (sinMagnitudeIncreasing) {
-            //If we're increasing, the direction will evnetualy change
-            setSinDirection(sinMagnitude);
-          }
-
-          //If we're still increasing...
-          if (sinMagnitudeIncreasing) {
-            sinMagnitudeRemaining = 1 + (1 - sinMagnitude);
-          } else {
-            sinMagnitudeRemaining = sinMagnitude;
-          }
-
-          if (sinMagnitudeRemainingInitial == -1) {
-            sinMagnitudeRemainingInitial = sinMagnitudeRemaining;
-          } else {
-            //If this is 0, we have reached the neutral position
-            float sinMagnitudeProgress = sinMagnitudeRemaining / sinMagnitudeRemainingInitial;
-            //currentAnimationSpeed = animationSpeedAtTimeOfStop * sinMagnitudeProgress; //TODO fix the janks
-          }
-        } else {
-          if (lastSinMagnitude != -1) {
-            //If we have saved a sin value, work out which direction we're going in
-            setSinDirection(sinMagnitude);
-            sinDirectionKnown =  true;
-            //We also want to save this, as the animation might be stopped before we reach max speed
+        if (lastSinMagnitude != -1) {
+          if (Math.abs(sinMagnitude) > 0.99f && sinMagnitude < lastSinMagnitude) {
+            slowingDown = true;
             animationSpeedAtTimeOfStop = currentAnimationSpeed;
-          } //If we haven't, we just have to wait until the next interaction to figure out what's going on...
+          }
+          if (slowingDown) {
+            //If we use max, the speed could jump up if we weren't already at max speed
+            currentAnimationSpeed = animationSpeedAtTimeOfStop * sinMagnitude;
+            System.out.println("sin " + sinMagnitude + " Speed " + currentAnimationSpeed + " diff - " + (lastAnimationSpeed - currentAnimationSpeed));
+          }
         }
         lastSinMagnitude = sinMagnitude;
+
       }
+
+      lastAnimationSpeed = currentAnimationSpeed;
 
     switch(currentAnimation) {
       case Rock :
@@ -359,8 +321,7 @@ public class MainGLEventListener implements GLEventListener {
   private void rock() {
 
     //If we're stopping the animation
-    if (stopTime != -1) {
-      System.out.println("Looking to stop");
+    if (stoppingAnimation && slowingDown) {
       //If the current rotation is within the stop bounds
       float rotateAllXAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.cos(elapsedTime) * currentAnimationSpeed;
       if (rotateAllAngle > rotateAllAngleStart - ROTATION_STOP_BOUNDS && rotateAllAngle < rotateAllAngleStart + ROTATION_STOP_BOUNDS) {
@@ -385,14 +346,12 @@ public class MainGLEventListener implements GLEventListener {
         } else {
           //If Z is in bounds but X isn't keep moving x
           rotateAll.setTransform(Mat4Transform.rotateAroundX(rotateAllXAngle));
-          System.out.println("ROtate angle is " + rotateAllAngle + " - " + rotateAllXAngle);
         }
       } else {
         if (rotateAllXAngle > rotateAllAngleStart - ROTATION_STOP_BOUNDS && rotateAllXAngle < rotateAllAngleStart + ROTATION_STOP_BOUNDS) {
           //If we're not in Z bounds, but are in X, keep moving Z
           float rotateAllAngle = MAX_ROTATION_ALL_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
           rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngle));
-          System.out.println("ROtate angle is " + rotateAllAngle + " - " + rotateAllXAngle);
         } else {
           //If we are stopping, but in the bounds of neither
           rockBothAxis();
@@ -402,7 +361,6 @@ public class MainGLEventListener implements GLEventListener {
       //If we are not stopping
       rockBothAxis();
     }
-    System.out.println("DOOT " + elapsedTime + " - " + (float)Math.sin(elapsedTime));
   }
 
   private void rockBothAxis() {
@@ -432,8 +390,7 @@ public class MainGLEventListener implements GLEventListener {
     translateHead.setTransform(m);
 
     //If we're stopping the animation
-    if (stopTime != -1) {
-      System.out.println("Looking to stop");
+    if (stoppingAnimation && slowingDown) {
       //If the current rotation is within the stop bounds
       if (rotateHeadAngle > rotateHeadAngleStart - ROTATION_STOP_BOUNDS && rotateHeadAngle < rotateHeadAngleStart + ROTATION_STOP_BOUNDS) {
         rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
@@ -463,11 +420,8 @@ public class MainGLEventListener implements GLEventListener {
     translateX.setTransform(Mat4Transform.translate(xPosition,0,0));
     //translateX.update(); // IMPORTANT – the scene graph has changed
 
-    System.out.println("Current slide is... " + xPosition);
-
     //If we're stopping the animation
-    if (stopTime != -1) {
-      System.out.println("Looking to stop");
+    if (stoppingAnimation && slowingDown) {
       //If the current rotation is within the stop bounds
       if (xPosition > xPositionStart - SLIDE_STOP_BOUNDS && xPosition < xPositionStart + SLIDE_STOP_BOUNDS) {
         switch(currentAnimation) {
@@ -490,20 +444,16 @@ public class MainGLEventListener implements GLEventListener {
 
 
   public void reset() {
-    stopTime = -1;
-    lastSinMagnitude = -1;
+    stoppingAnimation = false;
     animationStartTime = getSeconds();
-    //currentRotationSpeed = 0;
-
-    System.out.println("Resetting...");
-    sinDirectionKnown = false;
 
     animationSpeedAtTimeOfStop = -1;
-    sinMagnitudeRemainingInitial = -1;
     currentAnimationSpeed = 0;
+    slowingDown = false;
+
+    lastSinMagnitude = -1;
 
     if (pendingAnimation != AnimationSelections.None) {
-      System.out.println("Theres a pending animation-------------");
       currentAnimation = pendingAnimation;
       pendingAnimation = AnimationSelections.None;
     } else {
@@ -528,7 +478,7 @@ public class MainGLEventListener implements GLEventListener {
   private double programStartTime;
   private double animationStartTime = -1;
   //TODO change to boolean we don't slow down
-  private double stopTime = -1; //-1 indicates that we are not stopping
+  private boolean stoppingAnimation = false; //-1 indicates that we are not stopping
 
   private double getSeconds() {
     return System.currentTimeMillis()/1000.0;
