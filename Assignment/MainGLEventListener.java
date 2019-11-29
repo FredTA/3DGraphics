@@ -11,7 +11,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private static final boolean DISPLAY_SHADERS = false;
 
-  public enum AnimationSelection{
+  public enum AnimationSelections{
     Rock,
     Roll,
     Slide,
@@ -19,7 +19,8 @@ public class MainGLEventListener implements GLEventListener {
     None
   }
 
-  private AnimationSelection animation = AnimationSelection.None;
+  private AnimationSelections currentAnimation = AnimationSelections.None;
+  private AnimationSelections pendingAnimation = AnimationSelections.None;
 
   private static final float ANIMATION_STOP_BOUNDS = 0.5f;
   private static final float MAX_ROTATION_ALL_ANGLE = 35f;
@@ -84,13 +85,24 @@ public class MainGLEventListener implements GLEventListener {
    *
    */
 
-  public void selectAnimation(AnimationSelection animation) {
-    if (animation == AnimationSelection.None) {
-      //reset();
-      stopTime = getSeconds(); //This triggers the animations to stop
+  public void selectAnimation(AnimationSelections newAnimationSelection) {
+    if (newAnimationSelection == AnimationSelections.None) {
+      if (stopTime == -1) {
+        //Set the stop time if we aren't already stopping
+        stopTime = getSeconds(); //This triggers the animations to stop
+      }
     } else {
-      this.animation = animation;
-      startTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
+      System.out.println("Non None selection");
+      //If an animation was selected, but we are already animating
+      if (currentAnimation != AnimationSelections.None) {
+        stopTime = getSeconds(); //This triggers the animations to stop
+        pendingAnimation = newAnimationSelection;
+      } else {
+        //If an animation was selected, and we aren't already animating
+        System.out.println("We should be here...");
+        this.currentAnimation = newAnimationSelection;
+        startTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
+      }
     }
   }
 
@@ -218,35 +230,35 @@ public class MainGLEventListener implements GLEventListener {
     //updateBranches();
     snowmanRoot.draw(gl);
 
-    if (animation != AnimationSelection.None) {
-      animate();
-    } else {
-      System.out.println("Not animating");
-    }
+    handleAnimations();
   }
 
-  private void animate() {
-    switch(animation) {
-      case Rock :
-        System.out.println("Rocking...");
-        rock();
-        break;
-      case Roll :
-        roll();
-        System.out.println("Rolling...");
-        break;
-      case Slide :
-        slide();
-        System.out.println("Sliding...");
-        break;
-      case SlideRockAndRoll :
-        System.out.println("Sliding, rocking and rolling...");
-        rock();
-        roll();
-        slide();
-        break;
+  private void handleAnimations() {
+    //If there is a pending animation, and the current one has stopped...
+    if (pendingAnimation != AnimationSelections.None && stopTime == -1) {
+      currentAnimation = pendingAnimation;
+      pendingAnimation = AnimationSelections.None;
     }
-    snowmanRoot.update(); // IMPORTANT – the scene graph has changed
+
+    if (currentAnimation != AnimationSelections.None) {
+      switch(currentAnimation) {
+        case Rock :
+          rock();
+          break;
+        case Roll :
+          roll();
+          break;
+        case Slide :
+          slide();
+          break;
+        case SlideRockAndRoll :
+          rock();
+          roll();
+          slide();
+          break;
+      }
+      snowmanRoot.update(); // IMPORTANT – the scene graph has changed
+    }
   }
 
    private void updateX() {
@@ -301,7 +313,7 @@ public class MainGLEventListener implements GLEventListener {
 
     System.out.println("Resetting...");
 
-    animation = AnimationSelection.None;
+    currentAnimation = AnimationSelections.None;
 
     snowmanRoot.update();
   }

@@ -74,18 +74,18 @@ public class Main extends JFrame implements ActionListener {
 
   public void actionPerformed(ActionEvent e) {
     if (e.getActionCommand().equalsIgnoreCase("Rock")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelection.Rock);
+      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.Rock);
     }
     else if (e.getActionCommand().equalsIgnoreCase("Roll")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelection.Roll);    }
+      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.Roll);    }
     else if (e.getActionCommand().equalsIgnoreCase("Slide")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelection.Slide);
+      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.Slide);
     }
     else if (e.getActionCommand().equalsIgnoreCase("Slide, Rock and Roll")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelection.SlideRockAndRoll);
+      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.SlideRockAndRoll);
     }
     else if (e.getActionCommand().equalsIgnoreCase("reset")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelection.None);
+      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.None);
     }
     else if(e.getActionCommand().equalsIgnoreCase("quit"))
       System.exit(0);
