@@ -16,6 +16,9 @@ public class MainGLEventListener implements GLEventListener {
     Roll,
     Slide,
     SlideRockAndRoll,
+    SlideAndRock,
+    SlideAndRoll,
+    RockAndRoll,
     None
   }
 
@@ -98,6 +101,7 @@ public class MainGLEventListener implements GLEventListener {
       System.out.println("Non None selection");
       //If an animation was selected, but we are already animating
       if (currentAnimation != AnimationSelections.None) {
+        System.out.println("But we are here...");
         stopTime = getSeconds(); //This triggers the animations to stop
         pendingAnimation = newAnimationSelection;
       } else {
@@ -307,7 +311,7 @@ public class MainGLEventListener implements GLEventListener {
           } else {
             //If this is 0, we have reached the neutral position
             float sinMagnitudeProgress = sinMagnitudeRemaining / sinMagnitudeRemainingInitial;
-            currentAnimationSpeed = animationSpeedAtTimeOfStop * sinMagnitudeProgress;
+            //currentAnimationSpeed = animationSpeedAtTimeOfStop * sinMagnitudeProgress; //TODO fix the janks
           }
         } else {
           if (lastSinMagnitude != -1) {
@@ -336,6 +340,18 @@ public class MainGLEventListener implements GLEventListener {
         roll();
         slide();
         break;
+      case RockAndRoll :
+        rock();
+        roll();
+        break;
+      case SlideAndRoll :
+        roll();
+        slide();
+        break;
+      case SlideAndRock :
+        rock();
+        slide();
+        break;
     }
     snowmanRoot.update(); // IMPORTANT – the scene graph has changed
   }
@@ -350,7 +366,22 @@ public class MainGLEventListener implements GLEventListener {
       if (rotateAllAngle > rotateAllAngleStart - ROTATION_STOP_BOUNDS && rotateAllAngle < rotateAllAngleStart + ROTATION_STOP_BOUNDS) {
         if (rotateAllXAngle > rotateAllAngleStart - ROTATION_STOP_BOUNDS && rotateAllXAngle < rotateAllAngleStart + ROTATION_STOP_BOUNDS) {
           //If both x and z are within bounds, we can stop rocking and reset
-          reset();
+
+          rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
+          switch(currentAnimation) {
+            case Rock :
+              reset();
+              break;
+            case RockAndRoll :
+              currentAnimation = AnimationSelections.Roll;
+              break;
+            case SlideAndRock :
+              currentAnimation = AnimationSelections.Slide;
+              break;
+            case SlideRockAndRoll :
+              currentAnimation = AnimationSelections.SlideAndRoll;
+              break;
+            }
         } else {
           //If Z is in bounds but X isn't keep moving x
           rotateAll.setTransform(Mat4Transform.rotateAroundX(rotateAllXAngle));
@@ -405,7 +436,22 @@ public class MainGLEventListener implements GLEventListener {
       System.out.println("Looking to stop");
       //If the current rotation is within the stop bounds
       if (rotateHeadAngle > rotateHeadAngleStart - ROTATION_STOP_BOUNDS && rotateHeadAngle < rotateHeadAngleStart + ROTATION_STOP_BOUNDS) {
-        reset();
+        rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
+        translateHead.setTransform(Mat4Transform.translate(headPositionStart));
+        switch(currentAnimation) {
+          case Roll :
+            reset();
+            break;
+          case RockAndRoll :
+            currentAnimation = AnimationSelections.Rock;
+            break;
+          case SlideAndRoll :
+            currentAnimation = AnimationSelections.Slide;
+            break;
+          case SlideRockAndRoll :
+            currentAnimation = AnimationSelections.SlideAndRock;
+            break;
+        }
       }
     }
   }
@@ -424,19 +470,26 @@ public class MainGLEventListener implements GLEventListener {
       System.out.println("Looking to stop");
       //If the current rotation is within the stop bounds
       if (xPosition > xPositionStart - SLIDE_STOP_BOUNDS && xPosition < xPositionStart + SLIDE_STOP_BOUNDS) {
-        reset();
+        switch(currentAnimation) {
+          case Slide :
+            reset();
+            break;
+          case SlideAndRoll :
+            currentAnimation = AnimationSelections.Roll;
+            break;
+          case SlideAndRock :
+            currentAnimation = AnimationSelections.Rock;
+            break;
+          case SlideRockAndRoll :
+            currentAnimation = AnimationSelections.RockAndRoll;
+            break;
+        }
       }
     }
   }
 
 
   public void reset() {
-    //We don't actually need to do any transformations here, as the animations only stop once they are back in their start position
-
-    rotateAll.setTransform(Mat4Transform.rotateAroundZ(rotateAllAngleStart));
-    rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
-    translateHead.setTransform(Mat4Transform.translate(headPositionStart));
-
     stopTime = -1;
     lastSinMagnitude = -1;
     animationStartTime = getSeconds();
@@ -450,13 +503,12 @@ public class MainGLEventListener implements GLEventListener {
     currentAnimationSpeed = 0;
 
     if (pendingAnimation != AnimationSelections.None) {
+      System.out.println("Theres a pending animation-------------");
       currentAnimation = pendingAnimation;
       pendingAnimation = AnimationSelections.None;
     } else {
       currentAnimation = AnimationSelections.None;
     }
-
-    snowmanRoot.update();
   }
 
   // The light's postion is continually being changed, so needs to be calculated for each frame.
