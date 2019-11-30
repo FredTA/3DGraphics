@@ -118,7 +118,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, smoothStone;
+  private Model floor, snowball, smoothStone, roughStone;
   private Light light;
   private SGNode snowmanRoot;
 
@@ -135,19 +135,29 @@ public class MainGLEventListener implements GLEventListener {
   private float currentAnimationSpeed = 0;
 
   private static final float BODY_DIAMETER = 3.5f;
+  private static final float HEAD_ELEVATION = 0.4f; //I think the head looks a little better slightly clipped into the body, "mushed together" like a real snowman
   private static final float BODY_TO_HEAD_RATIO = 1.6f;
   private static final float HEAD_DIAMETER = BODY_DIAMETER / BODY_TO_HEAD_RATIO;
   private static final float HEAD_TO_NOSE_RATIO = 6.7f;
   private static final float NOSE_LENGTH_RATIO = 0.45f;
   private static final float NOSE_SIZE = HEAD_DIAMETER / HEAD_TO_NOSE_RATIO;
   private static final float NOSE_LENGTH = NOSE_SIZE / NOSE_LENGTH_RATIO;
+  private static final float MOUTH_ANGLE = 20f;
+  private static final float HEAD_TO_EYE_RATIO = 5.3f;
+  private static final float EYE_SIZE = HEAD_DIAMETER / HEAD_TO_EYE_RATIO;
+  private static final float EYE_ANGLE_X = -15f;
+  private static final float EYE_ANGLE_Y = 20f;
+  private static final float EYE_OFFSET = 0.5f;
+  private static final float BODY_TO_BUTTON_RATIO = 6.5f;
+  private static final float BUTTON_SIZE = BODY_DIAMETER / BODY_TO_BUTTON_RATIO;
+  private static final float ODD_BUTTONS_ANGLE =25f;
 
 
   private void initialise(GL3 gl) {
     createRandomNumbers();
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
     int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/snow.jpg");
-    int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
+    //int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
     int[] stoneRoughTexture = TextureLibrary.loadTexture(gl, "textures/stone.jpg");
     int[] stoneSmoothTexture = TextureLibrary.loadTexture(gl, "textures/stoneSmooth.jpg");
 
@@ -173,12 +183,15 @@ public class MainGLEventListener implements GLEventListener {
 
     //------------Nose & Mouth---------------
 
-    //mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
-    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
-    //modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0)); Not using this, so lets just set this to the identity matrix instead
     modelMatrix = new Mat4(1);
     smoothStone = new Model(gl, camera, light, shader, material, modelMatrix, mesh, stoneSmoothTexture);
+
+    //------------Eyes and buttons---------------
+
+    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
+    modelMatrix = new Mat4(1);
+    roughStone = new Model(gl, camera, light, shader, material, modelMatrix, mesh, stoneRoughTexture);
 
    //------------------------------Making the snoman---------------------------
 
@@ -191,8 +204,6 @@ public class MainGLEventListener implements GLEventListener {
     NameNode body = new NameNode("Body");
     Mat4 m = Mat4Transform.scale(BODY_DIAMETER, BODY_DIAMETER, BODY_DIAMETER);
     m = Mat4.multiply(m, Mat4Transform.translate(0, 0.5f, 0));
-    //Mat4 m = Mat4Transform.translate(0, BODY_DIAMETER / 2, 0);
-    //m = Mat4.multiply(m, Mat4Transform.scale(BODY_DIAMETER, BODY_DIAMETER, BODY_DIAMETER));
     TransformNode makeBody = new TransformNode("Scale to body size and move up", m);
     ModelNode bodyNode = new ModelNode("Body", snowball);
 
@@ -204,18 +215,74 @@ public class MainGLEventListener implements GLEventListener {
     rotateHead = new TransformNode("rotateAroundZ("+rotateHeadAngle+")", Mat4Transform.rotateAroundZ(rotateHeadAngle));
     NameNode head = new NameNode("Head");
     m = Mat4Transform.scale(HEAD_DIAMETER, HEAD_DIAMETER, HEAD_DIAMETER);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, 0.4f, 0)); //TODO comment
+    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_ELEVATION, 0));
     TransformNode makeHead = new TransformNode("scale(1.4f,1.4f,1.4f);translate(0,0.5,0)", m);
     ModelNode headNode = new ModelNode("Head", snowball);
 
     //-------------------Nose-------------------
 
-    TransformNode translateHead2 = new TransformNode("translate(0, BODY_DIAMETER, 0)",Mat4Transform.translate(0, (HEAD_DIAMETER / 2) - NOSE_SIZE , HEAD_DIAMETER / 2));
     NameNode nose = new NameNode("Nose");
     m = Mat4Transform.scale(NOSE_SIZE, NOSE_SIZE, NOSE_LENGTH);
-    m = Mat4.multiply(m, Mat4Transform.translate(0,0.4f,0));
+    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_ELEVATION + HEAD_DIAMETER + NOSE_SIZE, HEAD_DIAMETER - NOSE_LENGTH));
     TransformNode makeNoseBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
     ModelNode noseNode = new ModelNode("Nose", smoothStone);
+
+    //-------------------Mouth-------------------
+
+    NameNode mouth = new NameNode("Mouth");
+    m = Mat4Transform.scale(NOSE_LENGTH, NOSE_SIZE, NOSE_SIZE);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER, HEAD_DIAMETER));
+    m = Mat4.multiply(Mat4Transform.rotateAroundX(MOUTH_ANGLE), m);
+    TransformNode makeMouthBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode mouthNode = new ModelNode("Nose", smoothStone);
+
+    //-------------------Eyes-------------------
+
+    NameNode leftEye = new NameNode("leftEye");
+    m = Mat4Transform.scale(EYE_SIZE, EYE_SIZE, EYE_SIZE);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER + EYE_SIZE, HEAD_DIAMETER + EYE_SIZE + EYE_OFFSET));
+    m = Mat4.multiply(Mat4Transform.rotateAroundX(EYE_ANGLE_X), m);
+    m = Mat4.multiply(Mat4Transform.rotateAroundY(-EYE_ANGLE_Y), m);
+    TransformNode makeLeftEyeBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode leftEyeNode = new ModelNode("LeftEye", roughStone);
+
+    NameNode rightEye = new NameNode("rightEye");
+    m = Mat4Transform.scale(EYE_SIZE, EYE_SIZE, EYE_SIZE);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER + EYE_SIZE, HEAD_DIAMETER + EYE_SIZE + EYE_OFFSET));
+    m = Mat4.multiply(Mat4Transform.rotateAroundX(EYE_ANGLE_X), m);
+    m = Mat4.multiply(Mat4Transform.rotateAroundY(EYE_ANGLE_Y), m);
+    TransformNode makeRightEyeBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode rightEyeNode = new ModelNode("RightEye", roughStone);
+
+    //-------------------Buttons-------------------
+
+    NameNode button1 = new NameNode("button1");
+    m = Mat4Transform.scale(BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
+    m = Mat4.multiply(Mat4Transform.rotateAroundX(0), m);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, BODY_DIAMETER - (BUTTON_SIZE / 2), 0));
+    m = Mat4.multiply(m, Mat4Transform.rotateAroundX(ODD_BUTTONS_ANGLE));
+    m = Mat4.multiply(m, Mat4Transform.translate(0, 0, BODY_DIAMETER - (BUTTON_SIZE / 2)));
+    TransformNode makeButton1Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode button1Node = new ModelNode("Button1", roughStone);
+
+    NameNode button2 = new NameNode("button2");
+    m = Mat4Transform.scale(BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, BODY_DIAMETER - (BUTTON_SIZE / 2), BODY_DIAMETER - (BUTTON_SIZE / 2)));
+    TransformNode makeButton2Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode button2Node = new ModelNode("Button2", roughStone);
+
+    NameNode button3 = new NameNode("button3");
+    m = Mat4Transform.scale(BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, BODY_DIAMETER - (BUTTON_SIZE / 2), 0));
+    m = Mat4.multiply(m, Mat4Transform.rotateAroundX(-ODD_BUTTONS_ANGLE));
+    m = Mat4.multiply(m, Mat4Transform.translate(0, 0, BODY_DIAMETER - (BUTTON_SIZE / 2)));
+
+//    m = Mat4.multiply(Mat4Transform.translate(0, 0, 0), m);
+    TransformNode makeButton3Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode button3Node = new ModelNode("Button3", roughStone);
+
+
+    //-------------------------SCENE GRAPH------------------------------------
 
     snowmanRoot.addChild(translateX);
       translateX.addChild(rotateAll);
@@ -227,13 +294,30 @@ public class MainGLEventListener implements GLEventListener {
              rotateHead.addChild(head);
                head.addChild(makeHead);
                  makeHead.addChild(headNode);
-             head.addChild(translateHead2);
-               translateHead2.addChild(nose);
+               head.addChild(nose);
                  nose.addChild(makeNoseBranch);
                    makeNoseBranch.addChild(noseNode);
+               head.addChild(mouth);
+                 mouth.addChild(makeMouthBranch);
+                   makeMouthBranch.addChild(mouthNode);
+               head.addChild(leftEye);
+                 leftEye.addChild(makeLeftEyeBranch);
+                   makeLeftEyeBranch.addChild(leftEyeNode);
+               head.addChild(rightEye);
+                 rightEye.addChild(makeRightEyeBranch);
+                   makeRightEyeBranch.addChild(rightEyeNode);
+         body.addChild(button1);
+           button1.addChild(makeButton1Branch);
+             makeButton1Branch.addChild(button1Node);
+         body.addChild(button2);
+           button2.addChild(makeButton2Branch);
+             makeButton2Branch.addChild(button2Node);
+         body.addChild(button3);
+           button3.addChild(makeButton3Branch);
+             makeButton3Branch.addChild(button3Node);
     snowmanRoot.update();  // IMPORTANT – must be done every time any part of the scene graph changes
-    //snowman.print(0, false);
-    //System.exit(0);
+    // snowmanRoot.print(0, false);
+    // System.exit(0);
   }
 
 
