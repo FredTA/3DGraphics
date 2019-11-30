@@ -240,17 +240,19 @@ public class MainGLEventListener implements GLEventListener {
 
     NameNode leftEye = new NameNode("leftEye");
     m = Mat4Transform.scale(EYE_SIZE, EYE_SIZE, EYE_SIZE);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER + EYE_SIZE, HEAD_DIAMETER + EYE_SIZE + EYE_OFFSET));
-    m = Mat4.multiply(Mat4Transform.rotateAroundX(EYE_ANGLE_X), m);
-    m = Mat4.multiply(Mat4Transform.rotateAroundY(-EYE_ANGLE_Y), m);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER +(EYE_SIZE / 2), 0));
+    m = Mat4.multiply(m, Mat4Transform.rotateAroundX(EYE_ANGLE_X));
+    m = Mat4.multiply(m, Mat4Transform.rotateAroundY(-EYE_ANGLE_Y));
+    m = Mat4.multiply(m, Mat4Transform.translate(0, 0, HEAD_DIAMETER + (EYE_SIZE / 2)));
     TransformNode makeLeftEyeBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
     ModelNode leftEyeNode = new ModelNode("LeftEye", roughStone);
 
     NameNode rightEye = new NameNode("rightEye");
     m = Mat4Transform.scale(EYE_SIZE, EYE_SIZE, EYE_SIZE);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER + EYE_SIZE, HEAD_DIAMETER + EYE_SIZE + EYE_OFFSET));
-    m = Mat4.multiply(Mat4Transform.rotateAroundX(EYE_ANGLE_X), m);
-    m = Mat4.multiply(Mat4Transform.rotateAroundY(EYE_ANGLE_Y), m);
+    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER + (EYE_SIZE / 2), 0));
+    m = Mat4.multiply(m, Mat4Transform.rotateAroundX(EYE_ANGLE_X));
+    m = Mat4.multiply(m, Mat4Transform.rotateAroundY(EYE_ANGLE_Y));
+    m = Mat4.multiply(m, Mat4Transform.translate(0, 0, HEAD_DIAMETER + (EYE_SIZE / 2)));
     TransformNode makeRightEyeBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
     ModelNode rightEyeNode = new ModelNode("RightEye", roughStone);
 
@@ -276,8 +278,6 @@ public class MainGLEventListener implements GLEventListener {
     m = Mat4.multiply(m, Mat4Transform.translate(0, BODY_DIAMETER - (BUTTON_SIZE / 2), 0));
     m = Mat4.multiply(m, Mat4Transform.rotateAroundX(-ODD_BUTTONS_ANGLE));
     m = Mat4.multiply(m, Mat4Transform.translate(0, 0, BODY_DIAMETER - (BUTTON_SIZE / 2)));
-
-//    m = Mat4.multiply(Mat4Transform.translate(0, 0, 0), m);
     TransformNode makeButton3Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
     ModelNode button3Node = new ModelNode("Button3", roughStone);
 
