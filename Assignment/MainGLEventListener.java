@@ -92,20 +92,22 @@ public class MainGLEventListener implements GLEventListener {
    */
 
   public void selectAnimation(AnimationSelections newAnimationSelection) {
-    if (newAnimationSelection == AnimationSelections.None) {
-      stoppingAnimation = true; //This triggers the animations to stop
-    } else {
-      System.out.println("Non None selection");
-      //If an animation was selected, but we are already animating
-      if (currentAnimation != AnimationSelections.None) {
-        System.out.println("But we are here...");
-        stoppingAnimation = true; //This triggers the animations to stop
-        pendingAnimation = newAnimationSelection;
+    if (newAnimationSelection != currentAnimation) {
+      if (newAnimationSelection == AnimationSelections.None) {
+        stoppingAnimation = true; //This triggers the animations to begin stopping
       } else {
-        //If an animation was selected, and we aren't already animating
-        System.out.println("We should be here...");
-        this.currentAnimation = newAnimationSelection;
-        animationStartTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
+        System.out.println("Non None selection");
+        //If an animation was selected, but we are already animating
+        if (currentAnimation != AnimationSelections.None) {
+          System.out.println("But we are here...");
+          stoppingAnimation = true; //This triggers the animations to stop
+          pendingAnimation = newAnimationSelection;
+        } else {
+          //If an animation was selected, and we aren't already animating
+          System.out.println("We should be here...");
+          this.currentAnimation = newAnimationSelection;
+          animationStartTime = getSeconds(); //Reset the start time so the animation doesn't start with a jump
+        }
       }
     }
   }
