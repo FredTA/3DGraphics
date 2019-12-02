@@ -120,7 +120,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background;
+  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background, crate;
   private Light mainLight;
   private SGNode snowmanRoot;
 
@@ -169,12 +169,14 @@ public class MainGLEventListener implements GLEventListener {
 
   private void initialise(GL3 gl) {
     createRandomNumbers();
-    int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
     int[] groundTexture = TextureLibrary.loadTexture(gl, "textures/ice.jpg");
     int[] backgroundTexture = TextureLibrary.loadTexture(gl, "textures/woods.jpg");
     int[] snowfallTexture = TextureLibrary.loadTexture(gl, "textures/snowfall.jpg");
+
+    int[] crateTexture = TextureLibrary.loadTexture(gl, "textures/container2.jpg");
+    int[] crateSpeculularTexture = TextureLibrary.loadTexture(gl, "textures/container2_specular.jpg");
+
     int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/snow.jpg");
-    //int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
     int[] stoneRoughTexture = TextureLibrary.loadTexture(gl, "textures/stone.jpg");
     int[] stoneSmoothTexture = TextureLibrary.loadTexture(gl, "textures/stoneSmooth.jpg");
     int[] topHatMainTexture = TextureLibrary.loadTexture(gl, "textures/hatMain.jpg");
@@ -209,6 +211,15 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundX(90));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
     background = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, backgroundTexture, snowfallTexture, true);
+
+    //-----------Crate--------------------
+
+    mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
+    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    modelMatrix = Mat4Transform.translate(10.5f, 2.1f, 0f);
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(4.2f, 4.2f, 4.2f));
+    crate = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
 
     //------------Body & Head--------------
 
@@ -418,6 +429,7 @@ public class MainGLEventListener implements GLEventListener {
     mainLight.render(gl);
     floor.render(gl);
     background.render(gl);
+    crate.render(gl);
     //updateBranches();
     snowmanRoot.draw(gl);
 
