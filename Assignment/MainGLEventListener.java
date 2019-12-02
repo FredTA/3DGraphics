@@ -172,6 +172,7 @@ public class MainGLEventListener implements GLEventListener {
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
     int[] groundTexture = TextureLibrary.loadTexture(gl, "textures/ice.jpg");
     int[] backgroundTexture = TextureLibrary.loadTexture(gl, "textures/woods.jpg");
+    int[] snowfallTexture = TextureLibrary.loadTexture(gl, "textures/snowfall.jpg");
     int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/snow.jpg");
     //int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
     int[] stoneRoughTexture = TextureLibrary.loadTexture(gl, "textures/stone.jpg");
@@ -202,12 +203,12 @@ public class MainGLEventListener implements GLEventListener {
     //-----------Background--------------------
 
     mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
-    shader = new Shader(gl, "vs_tt.txt", "fs_tt.txt");
+    shader = new Shader(gl, "vs_animated.txt", "fs_animated.txt");
     material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4Transform.translate(0, 8, -12f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundX(90));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
-    background = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, backgroundTexture);
+    background = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, backgroundTexture, snowfallTexture, true);
 
     //------------Body & Head--------------
 
