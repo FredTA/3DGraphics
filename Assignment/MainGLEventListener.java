@@ -468,7 +468,6 @@ public class MainGLEventListener implements GLEventListener {
           if (slowingDown) {
             //If we use max, the speed could jump up if we weren't already at max speed
             currentAnimationSpeed = animationSpeedAtTimeOfStop * sinMagnitude;
-            System.out.println("sin " + sinMagnitude + " Speed " + currentAnimationSpeed + " diff - " + (lastAnimationSpeed - currentAnimationSpeed));
           }
         }
         lastSinMagnitude = sinMagnitude;

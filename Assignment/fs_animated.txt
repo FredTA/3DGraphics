@@ -49,6 +49,6 @@ void main() {
   //fragColor = vec4(result, 1.0);
   
   fragColor = vec4((mix(vec4(result, 1.0), 
-						texture(second_texture, movingTexCoord),
-					0.32f).rgb), 1.0f);
+						light.ambient.x * texture(second_texture, movingTexCoord),
+					0.5f).rgb), 1.0f);
 }
