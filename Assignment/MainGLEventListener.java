@@ -170,6 +170,7 @@ public class MainGLEventListener implements GLEventListener {
   private void initialise(GL3 gl) {
     createRandomNumbers();
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
+    int[] groundTexture = TextureLibrary.loadTexture(gl, "textures/ice.jpg");
     int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/snow.jpg");
     //int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
     int[] stoneRoughTexture = TextureLibrary.loadTexture(gl, "textures/stone.jpg");
@@ -192,9 +193,9 @@ public class MainGLEventListener implements GLEventListener {
 
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     Shader shader = new Shader(gl, "vs_tt.txt", "fs_tt.txt");
-    Material material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
-    Mat4 modelMatrix = Mat4Transform.scale(16,1f,16);
-    floor = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, textureId0);
+    Material material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    Mat4 modelMatrix = Mat4Transform.scale(24,1f,24);
+    floor = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, groundTexture);
 
 
     //------------Body & Head--------------
