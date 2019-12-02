@@ -132,7 +132,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private static final float MAXIMUM_ANIMATION_SPEED = 1.15f;
   private static final float MINIMUM_ANIMATION_SPEED = 0.15f;
-  private static final float ANIMATION_RAMP_UP_TIME = 4f; //The time it takes for the animation to start or stop
+  private static final float ANIMATION_RAMP_UP_TIME = 6f; //The time it takes for the animation to start or stop
   private static final float ANIMATION_RAMP_DOWN_TIME = 2f;
   private float currentAnimationSpeed = 0;
 
@@ -578,7 +578,9 @@ public class MainGLEventListener implements GLEventListener {
   private void slide() {
     //double elapsedTime = getSeconds()-startTime;
 
-    xPosition = MAX_SLIDE_POSITION * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
+    //Multiply by -1 so that when we slide, rock and roll..
+    //We rock and roll in the same direction as the slide, looks a bit more believable
+    xPosition = MAX_SLIDE_POSITION * (float)Math.sin(elapsedTime) * currentAnimationSpeed * -1;
     translateX.setTransform(Mat4Transform.translate(xPosition,0,0));
     //translateX.update(); // IMPORTANT – the scene graph has changed
 
