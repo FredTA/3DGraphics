@@ -120,7 +120,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon;
+  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background;
   private Light mainLight;
   private SGNode snowmanRoot;
 
@@ -171,6 +171,7 @@ public class MainGLEventListener implements GLEventListener {
     createRandomNumbers();
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
     int[] groundTexture = TextureLibrary.loadTexture(gl, "textures/ice.jpg");
+    int[] backgroundTexture = TextureLibrary.loadTexture(gl, "textures/woods.jpg");
     int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/snow.jpg");
     //int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
     int[] stoneRoughTexture = TextureLibrary.loadTexture(gl, "textures/stone.jpg");
@@ -194,9 +195,19 @@ public class MainGLEventListener implements GLEventListener {
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     Shader shader = new Shader(gl, "vs_tt.txt", "fs_tt.txt");
     Material material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
-    Mat4 modelMatrix = Mat4Transform.scale(24,1f,24);
+    Mat4 modelMatrix = Mat4Transform.scale(32,1f,24);
     floor = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, groundTexture);
 
+
+    //-----------Background--------------------
+
+    mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
+    shader = new Shader(gl, "vs_tt.txt", "fs_tt.txt");
+    material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    modelMatrix = Mat4Transform.translate(0, 8, -12f);
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundX(90));
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
+    background = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, backgroundTexture);
 
     //------------Body & Head--------------
 
@@ -218,7 +229,7 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = new Mat4(1);
     roughStone = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, stoneRoughTexture);
 
-        //------------Top hat cylinders
+    //------------Top hat cylinders
 
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
@@ -229,6 +240,8 @@ public class MainGLEventListener implements GLEventListener {
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
     modelMatrix = new Mat4(1);
     topHatRibbon = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, topHatBandTexture);
+
+
 
    //------------------------------Making the snoman---------------------------
 
@@ -403,6 +416,7 @@ public class MainGLEventListener implements GLEventListener {
     //light.setPosition(getLightPosition());  // changing light position each frame
     mainLight.render(gl);
     floor.render(gl);
+    background.render(gl);
     //updateBranches();
     snowmanRoot.draw(gl);
 
