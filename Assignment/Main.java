@@ -55,6 +55,12 @@ public class Main extends JFrame implements ActionListener {
       b = new JButton("Slide, Rock and Roll");
       b.addActionListener(this);
       p.add(b);
+      b = new JButton("Decrease Main Light");
+      b.addActionListener(this);
+      p.add(b);
+      b = new JButton("Increase Main Light");
+      b.addActionListener(this);
+      p.add(b);
       b = new JButton("Reset");
       b.addActionListener(this);
       p.add(b);
@@ -86,6 +92,12 @@ public class Main extends JFrame implements ActionListener {
     }
     else if (e.getActionCommand().equalsIgnoreCase("reset")) {
       glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.None);
+    }
+    else if (e.getActionCommand().equalsIgnoreCase("Decrease Main Light")) {
+      glEventListener.decreaseLightIntensity();
+    }
+    else if (e.getActionCommand().equalsIgnoreCase("Increase Main Light")) {
+      glEventListener.increaseLightIntensity();
     }
     else if(e.getActionCommand().equalsIgnoreCase("quit"))
       System.exit(0);

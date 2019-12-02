@@ -11,15 +11,73 @@ public class Light {
   private Shader shader;
   private Camera camera;
 
+  private Vec3 originalAmbient;
+  private Vec3 originalDiffuse;
+  private Vec3 originalSpecular;
+
+  private float intensity = 1;
+  private static final float INTENSITY_STEP = 0.25f;
+
   public Light(GL3 gl) {
     material = new Material();
-    material.setAmbient(0.5f, 0.5f, 0.5f);
-    material.setDiffuse(0.8f, 0.8f, 0.8f);
-    material.setSpecular(0.8f, 0.8f, 0.8f);
+
+    originalAmbient = new Vec3(0.5f, 0.5f, 0.5f);
+    originalDiffuse = new Vec3(0.8f, 0.8f, 0.8f);
+    originalSpecular = new Vec3(0.8f, 0.8f, 0.8f);
+
+    material.setAmbient(originalAmbient);
+    material.setDiffuse(originalDiffuse);
+    material.setSpecular(originalSpecular);
+
     position = new Vec3(3f,2f,1f);
     model = new Mat4(1);
     shader = new Shader(gl, "vs_light.txt", "fs_light.txt");
     fillBuffers(gl);
+  }
+
+  public Light(GL3 gl, Vec3 ambient, Vec3 diffuse, Vec3 specular) {
+    material = new Material();
+
+    originalAmbient = ambient;
+    originalDiffuse = diffuse;
+    originalSpecular = specular;
+
+    material.setAmbient(originalAmbient);
+    material.setDiffuse(originalDiffuse);
+    material.setSpecular(originalSpecular);
+
+    position = new Vec3(3f,2f,1f);
+    model = new Mat4(1);
+    shader = new Shader(gl, "vs_light.txt", "fs_light.txt");
+    fillBuffers(gl);
+  }
+
+  public void decreaseLightIntensity() {
+    if (intensity > 0) {
+      intensity -= INTENSITY_STEP;
+      changeMaterialColourIntensities();
+    }
+  }
+
+  public void increaseLightIntensity() {
+    if (intensity < 1) {
+      intensity += INTENSITY_STEP;
+      changeMaterialColourIntensities();
+    }
+  }
+
+  public void changeMaterialColourIntensities() {
+    Vec3 newAmbient = new Vec3(originalAmbient);
+    Vec3 newDiffuse = new Vec3(originalDiffuse);
+    Vec3 newSpecular = new Vec3(originalSpecular);
+
+    newAmbient.multiply(intensity);
+    newDiffuse.multiply(intensity);
+    newSpecular.multiply(intensity);
+
+    material.setAmbient(newAmbient);
+    material.setDiffuse(newDiffuse);
+    material.setSpecular(newSpecular);
   }
 
   public void setPosition(Vec3 v) {
