@@ -120,7 +120,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, smoothStone, roughStone;
+  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon;
   private Light light;
   private SGNode snowmanRoot;
 
@@ -154,6 +154,14 @@ public class MainGLEventListener implements GLEventListener {
   private static final float BUTTON_SIZE = BODY_DIAMETER / BODY_TO_BUTTON_RATIO;
   private static final float ODD_BUTTONS_ANGLE =25f;
 
+  private static final float TOP_HAT_RIM_HEIGHT = 0.1f;
+  private static final float TOP_HAT_RIM_WIDTH = 1.8f;
+  private static final float TOP_HAT_MAIN_OFFSET = -0.3f; //So that it sits a bit lower on the head
+  private static final float TOP_HAT_MAIN_HEIGHT = 1.7f;
+  private static final float TOP_HAT_MAIN_WIDTH = 1.4f;
+  private static final float TOP_HAT_BAND_TO_MAIN_HEIGHT_RATIO = 0.17f;
+  private static final float TOP_HAT_BAND_TO_MAIN_WIDTH_RATIO = 1.03f;
+
 
   private void initialise(GL3 gl) {
     createRandomNumbers();
@@ -162,6 +170,8 @@ public class MainGLEventListener implements GLEventListener {
     //int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
     int[] stoneRoughTexture = TextureLibrary.loadTexture(gl, "textures/stone.jpg");
     int[] stoneSmoothTexture = TextureLibrary.loadTexture(gl, "textures/stoneSmooth.jpg");
+    int[] topHatMainTexture = TextureLibrary.loadTexture(gl, "textures/hatMain.jpg");
+    int[] topHatBandTexture = TextureLibrary.loadTexture(gl, "textures/ribbon.jpg");
 
     light = new Light(gl);
     light.setCamera(camera);
@@ -194,6 +204,18 @@ public class MainGLEventListener implements GLEventListener {
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = new Mat4(1);
     roughStone = new Model(gl, camera, light, shader, material, modelMatrix, mesh, stoneRoughTexture);
+
+        //------------Top hat cylinders
+
+    mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
+    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
+    modelMatrix = new Mat4(1);
+    topHatMain = new Model(gl, camera, light, shader, material, modelMatrix, mesh, topHatMainTexture);
+
+    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
+    modelMatrix = new Mat4(1);
+    topHatRibbon = new Model(gl, camera, light, shader, material, modelMatrix, mesh, topHatBandTexture);
 
    //------------------------------Making the snoman---------------------------
 
@@ -236,7 +258,7 @@ public class MainGLEventListener implements GLEventListener {
     m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER, HEAD_DIAMETER));
     m = Mat4.multiply(Mat4Transform.rotateAroundX(MOUTH_ANGLE), m);
     TransformNode makeMouthBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
-    ModelNode mouthNode = new ModelNode("Nose", smoothStone);
+    ModelNode mouthNode = new ModelNode("Mouth", smoothStone);
 
     //-------------------Eyes-------------------
 
@@ -283,6 +305,27 @@ public class MainGLEventListener implements GLEventListener {
     TransformNode makeButton3Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
     ModelNode button3Node = new ModelNode("Button3", roughStone);
 
+    //-------------------Top hat-------------------
+
+    NameNode topHatBody = new NameNode("topHatBody");
+    m = Mat4Transform.scale(TOP_HAT_MAIN_WIDTH, TOP_HAT_MAIN_HEIGHT, TOP_HAT_MAIN_WIDTH);
+    m = Mat4.multiply(Mat4Transform.translate(0, (HEAD_DIAMETER / 2) + TOP_HAT_MAIN_HEIGHT + TOP_HAT_MAIN_OFFSET, 0), m);
+    TransformNode makeTopHatBodyBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode topHatBodyNode = new ModelNode("topHatBody", topHatMain);
+
+    NameNode topHatRim = new NameNode("topHatRim");
+    m = Mat4Transform.scale(TOP_HAT_RIM_WIDTH, TOP_HAT_RIM_HEIGHT, TOP_HAT_RIM_WIDTH);
+    m = Mat4.multiply(Mat4Transform.translate(0, (-TOP_HAT_MAIN_HEIGHT / 4), 0), m);
+    TransformNode makeTopHatRimBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode topHatRimNode = new ModelNode("topHatRim", topHatMain);
+
+    NameNode topHatBand = new NameNode("topHatBand");
+    m = Mat4Transform.scale( TOP_HAT_BAND_TO_MAIN_WIDTH_RATIO, TOP_HAT_BAND_TO_MAIN_HEIGHT_RATIO,  TOP_HAT_BAND_TO_MAIN_WIDTH_RATIO);
+    m = Mat4.multiply(Mat4Transform.translate(0, (-TOP_HAT_MAIN_HEIGHT / 3) + TOP_HAT_BAND_TO_MAIN_HEIGHT_RATIO + TOP_HAT_RIM_HEIGHT, 0), m);
+    TransformNode makeTopHatBandBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    ModelNode topHatBandNode = new ModelNode("topHatBand", topHatRibbon);
+
+    //TODO All of the above is done pretty incorrectly, fix!
 
     //-------------------------SCENE GRAPH------------------------------------
 
@@ -308,6 +351,15 @@ public class MainGLEventListener implements GLEventListener {
                head.addChild(rightEye);
                  rightEye.addChild(makeRightEyeBranch);
                    makeRightEyeBranch.addChild(rightEyeNode);
+               head.addChild(topHatBody);
+                 topHatBody.addChild(makeTopHatBodyBranch);
+                   makeTopHatBodyBranch.addChild(topHatBodyNode);
+                 makeTopHatBodyBranch.addChild(topHatRim);
+                   topHatRim.addChild(makeTopHatRimBranch);
+                     makeTopHatRimBranch.addChild(topHatRimNode);
+                 makeTopHatBodyBranch.addChild(topHatBand);
+                   topHatBand.addChild(makeTopHatBandBranch);
+                     makeTopHatBandBranch.addChild(topHatBandNode);
          body.addChild(button1);
            button1.addChild(makeButton1Branch);
              makeButton1Branch.addChild(button1Node);
