@@ -26,7 +26,7 @@ public class MainGLEventListener implements GLEventListener {
   private AnimationSelections pendingAnimation = AnimationSelections.None;
 
   private static final float ROTATION_STOP_BOUNDS = 0.34f;
-  private static final float MAX_ROTATION_ALL_ANGLE = 35f;
+  private static final float MAX_ROTATION_ALL_ANGLE = 20f;
   private static final float MAX_ROTATION_HEAD_ANGLE = 35f;
 
   private static final float SLIDE_STOP_BOUNDS = 0.1f;
@@ -132,7 +132,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private static final float MAXIMUM_ANIMATION_SPEED = 1.15f;
   private static final float MINIMUM_ANIMATION_SPEED = 0.15f;
-  private static final float ANIMATION_RAMP_UP_TIME = 3f; //The time it takes for the animation to start or stop
+  private static final float ANIMATION_RAMP_UP_TIME = 4f; //The time it takes for the animation to start or stop
   private static final float ANIMATION_RAMP_DOWN_TIME = 2f;
   private float currentAnimationSpeed = 0;
 
