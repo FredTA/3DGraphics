@@ -15,6 +15,7 @@ struct Light {
   vec3 diffuse;
   vec3 specular;
   float cuttoff;
+  float outerCuttoff;
   vec3 direction;
 };
 
@@ -52,8 +53,10 @@ void main() {
   
   lightDir = normalize(spotlight.position - aPos); 
   float theta = dot(lightDir, normalize(-spotlight.direction));
+  float epsilon = spotlight.cuttoff - spotlight.outerCuttoff;
+  float intensity = clamp((theta - spotlight.outerCuttoff) / epsilon, 0.0, 1.0);
   
-  if (theta > spotlight.cuttoff){
+  //if (theta > spotlight.cuttoff){
       // ambient
 	  vec3 ambient2 = spotlight.ambient * material.ambient * texture(first_texture, aTexCoord).rgb;
 	  
@@ -68,8 +71,8 @@ void main() {
 	  spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	  vec3 specular2 = spotlight.specular * (spec * material.specular);
 	  
-	  result += ambient2 + diffuse2 + specular2;
-  } 
+	  result += (ambient2 + diffuse2 + specular2) * intensity;
+  //} 
   
   fragColor = vec4(result, 1.0);
 }

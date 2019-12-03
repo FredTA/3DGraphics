@@ -84,6 +84,7 @@ public class Model {
     shader.setVec3(gl, "spotlight.diffuse", spotlight.getMaterial().getDiffuse());
     shader.setVec3(gl, "spotlight.specular", spotlight.getMaterial().getSpecular());
     shader.setFloat(gl, "spotlight.cuttoff", spotlight.getCutoff());
+    shader.setFloat(gl, "spotlight.outerCuttoff", spotlight.getOuterCutoff());
     shader.setVec3(gl, "spotlight.direction", spotlight.getDirection());
 
     shader.setVec3(gl, "material.ambient", material.getAmbient());

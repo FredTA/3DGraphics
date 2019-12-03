@@ -202,7 +202,8 @@ public class MainGLEventListener implements GLEventListener {
     mainLight.setPosition(new Vec3(MAIN_LIGHT_X, MAIN_LIGHT_Y, MAIN_LIGHT_Z));
     mainLight.setCamera(camera);
 
-    spotlight = new Light(gl, mainLightAmbient, mainLightDiffuse, mainLightSpecular, (float)Math.cos(Math.toRadians(12.5f)));
+    spotlight = new Light(gl, mainLightAmbient, mainLightDiffuse, mainLightSpecular,
+                         (float)Math.cos(Math.toRadians(8.5f)), (float)Math.cos(Math.toRadians(12.5f)));
     spotlight.setCamera(camera);
 
     //-----------Floor--------------------

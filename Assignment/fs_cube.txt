@@ -16,6 +16,8 @@ struct Light {
   vec3 diffuse;
   vec3 specular;
   vec3 cuttoff;
+  float outerCuttoff;
+  vec3 direction;
 };
 
 uniform Light light;  

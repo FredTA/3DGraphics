@@ -17,6 +17,7 @@ public class Light {
   private Vec3 originalSpecular;
 
   private float cutoff;
+  private float outerCutoff;
 
   private float intensity = 1;
   private static final float INTENSITY_STEP = 0.25f;
@@ -55,9 +56,10 @@ public class Light {
     fillBuffers(gl);
   }
 
-    public Light(GL3 gl, Vec3 ambient, Vec3 diffuse, Vec3 specular, float cutoff) {
+    public Light(GL3 gl, Vec3 ambient, Vec3 diffuse, Vec3 specular, float cutoff, float outerCutoff) {
       this(gl, ambient, diffuse, specular);
       this.cutoff = cutoff;
+      this.outerCutoff = outerCutoff;
       direction = new Vec3(0, -1, 0);
     }
 
@@ -126,6 +128,10 @@ public class Light {
 
   public float getCutoff(){
     return cutoff;
+  }
+
+  public float getOuterCutoff(){
+    return outerCutoff;
   }
 
   public void setMaterial(Material m) {
