@@ -8,6 +8,7 @@ public class Light {
   private Material material;
   private Vec3 position;
   private Vec3 direction;
+  private Vec3 rotation = new Vec3(1, 1, 1);
   private Mat4 model;
   private Shader shader;
   private Camera camera;
@@ -118,6 +119,12 @@ public class Light {
     direction.z = z;
   }
 
+  public void setRotation(float x, float y, float z) {
+    rotation.x = x;
+    rotation.y = y;
+    rotation.z = z;
+  }
+
   public Vec3 getDirection(){
     return direction;
   }
@@ -148,7 +155,9 @@ public class Light {
 
   public void render(GL3 gl) {
     Mat4 model = new Mat4(1);
-    model = Mat4.multiply(Mat4Transform.scale(0.3f,0.3f,0.3f), model);
+    model = Mat4.multiply(Mat4Transform.scale(0.6f,0.1f,0.6f), model);
+    model = Mat4.multiply(Mat4Transform.rotateAroundZ(rotation.z), model);
+    model = Mat4.multiply(Mat4Transform.rotateAroundY(rotation.y), model);
     model = Mat4.multiply(Mat4Transform.translate(position), model);
 
     Mat4 mvpMatrix = Mat4.multiply(camera.getPerspectiveMatrix(), Mat4.multiply(camera.getViewMatrix(), model));

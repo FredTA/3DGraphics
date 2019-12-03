@@ -168,7 +168,7 @@ public class MainGLEventListener implements GLEventListener {
   private static final float MAIN_LIGHT_Z = 15.0f;
 
   private float spotlightLampBaseX = -9.5f;
-  private float spotlightLampBaseY = 13;
+  private float spotlightLampBaseY = 13f;
   private float spotlightLampBaseZ = 0;
 
   private static float SPOTLIGHT_ROTATION_Z = 40f;
@@ -181,7 +181,7 @@ public class MainGLEventListener implements GLEventListener {
 
 
   private void initialise(GL3 gl) {
-    createRandomNumbers();
+    //createRandomNumbers();
     int[] groundTexture = TextureLibrary.loadTexture(gl, "textures/ice.jpg");
     int[] backgroundTexture = TextureLibrary.loadTexture(gl, "textures/woods.jpg");
     int[] snowfallTexture = TextureLibrary.loadTexture(gl, "textures/snowfall.jpg");
@@ -601,7 +601,18 @@ public class MainGLEventListener implements GLEventListener {
     zDir = zDir * horizontalComponent;
 
     spotlight.setDirection(xDir, -1, zDir);
-    spotlight.setPosition(getSpotlightPosition());
+    rotateSpotlightLamp();
+  }
+
+  private void rotateSpotlightLamp() {
+    double elapsedTime = getSeconds() - programStartTime;
+
+    float x = spotlightLampBaseX - 3.75f*(float)(Math.sin(Math.toRadians(rotateSpotlightAngle - 90)));
+    float y = spotlightLampBaseY;
+    float z = spotlightLampBaseZ - 3.75f*(float)(Math.cos(Math.toRadians(rotateSpotlightAngle - 90)));
+
+    spotlight.setPosition(x, y, z);
+    spotlight.setRotation(0, rotateSpotlightAngle, SPOTLIGHT_ROTATION_Z);
   }
 
   private void rock() {
@@ -745,19 +756,6 @@ public class MainGLEventListener implements GLEventListener {
     }
   }
 
-  // The light's postion is continually being changed, so needs to be calculated for each frame.
-  private Vec3 getSpotlightPosition() {
-    double elapsedTime = getSeconds() - programStartTime;
-
-    //float x = spotlightLampBaseX - 4.5f*(float)(Math.sin(Math.toRadians(elapsedTime*90)));
-    float x = spotlightLampBaseX - 4.5f*(float)(Math.sin(Math.toRadians(rotateSpotlightAngle - 90)));
-    float y = spotlightLampBaseY;
-    // float z = spotlightLampBaseZ - 4.5f*(float)(Math.cos(Math.toRadians(elapsedTime*90)));
-    float z = spotlightLampBaseZ - 4.5f*(float)(Math.cos(Math.toRadians(rotateSpotlightAngle - 90)));
-    return new Vec3(x,y,z);
-    //return new Vec3(5f,3.4f,5f);
-  }
-
   // ***************************************************
   /* TIME
    */
@@ -771,18 +769,5 @@ public class MainGLEventListener implements GLEventListener {
     return System.currentTimeMillis()/1000.0;
   }
 
-  // ***************************************************
-  /* An array of random numbers
-   */
-
-  private int NUM_RANDOMS = 1000;
-  private float[] randoms;
-
-  private void createRandomNumbers() {
-    randoms = new float[NUM_RANDOMS];
-    for (int i=0; i<NUM_RANDOMS; ++i) {
-      randoms[i] = (float)Math.random();
-    }
-  }
 
 }
