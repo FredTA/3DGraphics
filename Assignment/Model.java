@@ -102,6 +102,8 @@ public class Model {
       gl.glActiveTexture(GL.GL_TEXTURE1);
       gl.glBindTexture(GL.GL_TEXTURE_2D, textureId2[0]);
 
+      //TODO don't need to bind textures each time
+
 
       if (secondTextureIsAnimated) {
         double currentTime = System.currentTimeMillis()/1000.0;

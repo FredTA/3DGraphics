@@ -7,6 +7,7 @@ in vec2 aTexCoord;
 out vec4 fragColor;
 
 uniform sampler2D first_texture;
+uniform sampler2D second_texture;
 uniform vec3 viewPos;
 
 struct Light {
@@ -45,7 +46,7 @@ void main() {
   vec3 viewDir = normalize(viewPos - aPos);
   vec3 reflectDir = reflect(-lightDir, norm);  
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-  vec3 specular = light.specular * (spec * material.specular);
+  vec3 specular = light.specular * (spec * material.specular) * texture(second_texture, aTexCoord).rbg;
 
   vec3 result = ambient + diffuse + specular;
   
@@ -69,7 +70,7 @@ void main() {
   viewDir = normalize(viewPos - aPos);
   reflectDir = reflect(-lightDir, norm);  
   spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-  vec3 specular2 = spotlight.specular * (spec * material.specular);
+  vec3 specular2 = spotlight.specular * (spec * material.specular) * texture(second_texture, aTexCoord).rbg;
   
   result += (ambient2 + diffuse2 + specular2) * intensity;
 

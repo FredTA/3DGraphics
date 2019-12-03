@@ -39,7 +39,8 @@ public class MainGLEventListener implements GLEventListener {
 
   public MainGLEventListener(Camera camera) {
     this.camera = camera;
-    this.camera.setPosition(new Vec3(4f,12f,18f));
+    this.camera.setPosition(new Vec3(-7f,16f,26f));
+    camera.updateYawPitch((float)Math.toRadians(-3), (float)Math.toRadians(9));
   }
 
   // ***************************************************
@@ -171,8 +172,8 @@ public class MainGLEventListener implements GLEventListener {
   private float spotlightLampBaseZ = 0;
 
   private static float SPOTLIGHT_ROTATION_Z = 40f;
-  private static float SPOTLIGHT_INNER_CUTTOFF = 21f;
-  private static float SPOTLIGHT_OUTER_CUTOFF = 23.5f;
+  private static float SPOTLIGHT_INNER_CUTTOFF = 24f;
+  private static float SPOTLIGHT_OUTER_CUTOFF = 26.5f;
 
   private boolean spotlightActive = true;
   private static final float SPOTLIGHT_ROTATION_SPEED = 90f;
@@ -219,8 +220,8 @@ public class MainGLEventListener implements GLEventListener {
     //-----------Floor--------------------
 
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
-    Shader shader = new Shader(gl, "vs_tt.txt", "fs_tt.txt");
-    Material material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    Shader shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    Material material = new Material(new Vec3(0.68f, 0.73f, 0.8f), new Vec3(0.58f, 0.63f, 0.7f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
     Mat4 modelMatrix = Mat4Transform.scale(32,1f,24);
     floor = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, groundTexture);
 
@@ -229,7 +230,7 @@ public class MainGLEventListener implements GLEventListener {
 
     mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     shader = new Shader(gl, "vs_animated.txt", "fs_animated.txt");
-    material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
+    material = new Material(new Vec3(0.8f, 0.8f, 0.8f), new Vec3(0.8f, 0.8f, 0.8f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
     modelMatrix = Mat4Transform.translate(0, 8, -12f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundX(90));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
@@ -238,17 +239,19 @@ public class MainGLEventListener implements GLEventListener {
     //-----------Crate--------------------
 
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
-    material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    shader = new Shader(gl, "vs_cube.txt", "fs_tt.txt");
+    material = new Material(new Vec3(0.9f, 0.9f, 0.9f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(1, 1, 1), 32.0f);
     modelMatrix = Mat4Transform.translate(10.5f, 2.1f, 0f);
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundY(25));
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundZ(55));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(4.2f, 4.2f, 4.2f));
     crate = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
 
-    //-----------Spotlight--------------------
+    //-----------Spotlight pole--------------------
 
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
-    material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    material = new Material(new Vec3(0.8f, 0.8f, 0.9f), new Vec3(0.8f, 0.8f, 0.9f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
     modelMatrix = new Mat4(1);
     metal = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, spotlightTexture);
 
@@ -256,21 +259,21 @@ public class MainGLEventListener implements GLEventListener {
 
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
-    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.2f, 0.2f, 0.2f), 32.0f);
+    material = new Material(new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0.2f, 0.2f, 0.2f), 32.0f);
     modelMatrix = new Mat4(1);
     snowball = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, textureId1);
 
     //------------Nose & Mouth---------------
 
     //Smoth, polished stone, so we should have a greater specular
-    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
+    material = new Material(new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0.7f, 0.7f, 0.7f), 32.0f);
     modelMatrix = new Mat4(1);
     smoothStone = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, stoneSmoothTexture);
 
     //------------Eyes and buttons---------------
 
     //Rough stone, so less specular
-    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0, 0, 0), 32.0f);
+    material = new Material(new Vec3(0.85f, 0.85f, 0.85f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0, 0, 0), 32.0f);
     modelMatrix = new Mat4(1);
     roughStone = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, stoneRoughTexture);
 
@@ -279,12 +282,12 @@ public class MainGLEventListener implements GLEventListener {
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
     //Top hat material should have little specular
-    material = new Material(new Vec3(0.8f, 0.8f, 0.8f), new Vec3(0.8f, 0.8f, 0.8f), new Vec3(0.1f, 0.1f, 0.1f), 32.0f);
+    material = new Material(new Vec3(1, 1, 1), new Vec3(1, 1, 1), new Vec3(0.1f, 0.1f, 0.1f), 32.0f);
     modelMatrix = new Mat4(1);
     topHatMain = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatMainTexture);
 
     //Top hat ribon should have lots of specular
-    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
+    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
     modelMatrix = new Mat4(1);
     topHatRibbon = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatBandTexture);
 
