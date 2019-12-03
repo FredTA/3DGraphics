@@ -120,7 +120,7 @@ public class MainGLEventListener implements GLEventListener {
   private Camera camera;
   private Mat4 perspective;
   private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background, crate, metal;
-  private Light mainLight;
+  private Light mainLight, spotlight;
   private SGNode snowmanRoot, spotlightRoot;
 
   private TransformNode translateX, rotateAll, translateHead, rotateHead, rotateSpotlight;
@@ -196,8 +196,10 @@ public class MainGLEventListener implements GLEventListener {
 
     mainLight = new Light(gl, mainLightAmbient, mainLightDiffuse, mainLightSpecular);
     mainLight.setPosition(new Vec3(MAIN_LIGHT_X, MAIN_LIGHT_Y, MAIN_LIGHT_Z));
-
     mainLight.setCamera(camera);
+
+    spotlight = new Light(gl, mainLightAmbient, mainLightDiffuse, mainLightSpecular);
+    spotlight.setCamera(camera);
 
     //-----------Floor--------------------
 
@@ -205,7 +207,7 @@ public class MainGLEventListener implements GLEventListener {
     Shader shader = new Shader(gl, "vs_tt.txt", "fs_tt.txt");
     Material material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     Mat4 modelMatrix = Mat4Transform.scale(32,1f,24);
-    floor = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, groundTexture);
+    floor = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, groundTexture);
 
 
     //-----------Background--------------------
@@ -216,7 +218,7 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = Mat4Transform.translate(0, 8, -12f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundX(90));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
-    background = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, backgroundTexture, snowfallTexture, true);
+    background = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, backgroundTexture, snowfallTexture, true);
 
     //-----------Crate--------------------
 
@@ -225,7 +227,7 @@ public class MainGLEventListener implements GLEventListener {
     material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4Transform.translate(10.5f, 2.1f, 0f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(4.2f, 4.2f, 4.2f));
-    crate = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
+    crate = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
 
     //-----------Spotlight--------------------
 
@@ -233,7 +235,7 @@ public class MainGLEventListener implements GLEventListener {
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
     material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = new Mat4(1);
-    metal = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, spotlightTexture);
+    metal = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, spotlightTexture);
 
     //------------Body & Head--------------
 
@@ -241,19 +243,19 @@ public class MainGLEventListener implements GLEventListener {
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
     modelMatrix = new Mat4(1);
-    snowball = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, textureId1);
+    snowball = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, textureId1);
 
     //------------Nose & Mouth---------------
 
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = new Mat4(1);
-    smoothStone = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, stoneSmoothTexture);
+    smoothStone = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, stoneSmoothTexture);
 
     //------------Eyes and buttons---------------
 
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = new Mat4(1);
-    roughStone = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, stoneRoughTexture);
+    roughStone = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, stoneRoughTexture);
 
     //------------Top hat cylinders
 
@@ -261,11 +263,11 @@ public class MainGLEventListener implements GLEventListener {
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
     modelMatrix = new Mat4(1);
-    topHatMain = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, topHatMainTexture);
+    topHatMain = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatMainTexture);
 
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
     modelMatrix = new Mat4(1);
-    topHatRibbon = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, topHatBandTexture);
+    topHatRibbon = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatBandTexture);
 
    //---------------------------Making the spotlight--------------------------
 
@@ -286,6 +288,13 @@ public class MainGLEventListener implements GLEventListener {
    TransformNode scaleSpotlightPole2 = new TransformNode("Scale spotlight pole 2", Mat4Transform.scale(5f, 0.4f, 0.4f));
    ModelNode spotlightPole2Node = new ModelNode("Spotlight Pole2 ", metal);
 
+
+   NameNode spotLightLamp = new NameNode("Spotlight Lamp");
+   TransformNode makeSpotlightLamp = new TransformNode("move light to end of pole", Mat4Transform.translate(2.5f - 0.4f, -0.2f -0.075f, 0));
+   TransformNode scaleSpotlightLamp = new TransformNode("Scale spotlight lamp", Mat4Transform.scale(0.8f, 0.15f, 0.8f));
+   LightNode spotlightLampNode = new LightNode("Spotlight lamp node", spotlight);
+   //spotLight.setPosition(new Vec3(MAIN_LIGHT_X, MAIN_LIGHT_Y, MAIN_LIGHT_Z));
+
    spotlightRoot.addChild(spotlightPole);
     spotlightPole.addChild(makeSpotlightPole);
       makeSpotlightPole.addChild(scaleSpotlightPole);
@@ -295,6 +304,10 @@ public class MainGLEventListener implements GLEventListener {
          rotateSpotlight.addChild(makeSpotlightPole2);
            makeSpotlightPole2.addChild(scaleSpotlightPole2);
              scaleSpotlightPole2.addChild(spotlightPole2Node);
+           makeSpotlightPole2.addChild(spotLightLamp);
+             spotLightLamp.addChild(makeSpotlightLamp);
+               makeSpotlightLamp.addChild(scaleSpotlightLamp);
+                 scaleSpotlightLamp.addChild(spotlightLampNode);
    spotlightRoot.update();
 
    //------------------------------Making the snoman---------------------------
@@ -464,20 +477,18 @@ public class MainGLEventListener implements GLEventListener {
 
   public void toggleSpotlight(){
     spotlightActive = !spotlightActive;
-    System.out.println("toggle spotlight");
   }
 
-  //private double animationStartTime;
-  //private double lastElapsedTime;
 
   private void render(GL3 gl) {
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
     //light.setPosition(getLightPosition());  // changing light position each frame
     mainLight.render(gl);
+    //spotlight.render(gl);
     floor.render(gl);
     background.render(gl);
     crate.render(gl);
-    //updateBranches();
+
     snowmanRoot.draw(gl);
     spotlightRoot.draw(gl);
 
@@ -490,8 +501,6 @@ public class MainGLEventListener implements GLEventListener {
     }
 
     lastTime = getSeconds();
-
-
   }
 
   private double elapsedTime;
@@ -567,7 +576,6 @@ public class MainGLEventListener implements GLEventListener {
     rotateSpotlightAngle += SPOTLIGHT_ROTATION_SPEED * deltaTime;
     rotateSpotlight.setTransform(Mat4Transform.rotateAroundY(rotateSpotlightAngle));
     spotlightRoot.update();
-    System.out.println("Rotating spotlight");
   }
 
   private void rock() {

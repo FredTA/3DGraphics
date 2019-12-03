@@ -12,7 +12,7 @@ public class Model {
   private Shader shader;
   private Mat4 modelMatrix;
   private Camera camera;
-  private Light light;
+  private Light light, spotlight;
 
 
   //Animation variables
@@ -32,25 +32,26 @@ public class Model {
   private float offsetY;
   private double lastTime;
 
-  public Model(GL3 gl, Camera camera, Light light, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1, int[] textureId2, boolean animate) {
+  public Model(GL3 gl, Camera camera, Light light, Light spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1, int[] textureId2, boolean animate) {
     this.mesh = mesh;
     this.material = material;
     this.modelMatrix = modelMatrix;
     this.shader = shader;
     this.camera = camera;
     this.light = light;
+    this.spotlight = spotlight;
     this.textureId1 = textureId1;
     this.textureId2 = textureId2;
     secondTextureIsAnimated = animate;
     lastTime = timeOfLastAnimationChange = System.currentTimeMillis()/1000.0;
   }
 
-  public Model(GL3 gl, Camera camera, Light light, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1) {
-    this(gl, camera, light, shader, material, modelMatrix, mesh, textureId1, null, false);
+  public Model(GL3 gl, Camera camera, Light light, Light spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1) {
+    this(gl, camera, light, spotlight, shader, material, modelMatrix, mesh, textureId1, null, false);
   }
 
-  public Model(GL3 gl, Camera camera, Light light, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh) {
-    this(gl, camera, light, shader, material, modelMatrix, mesh, null, null, false);
+  public Model(GL3 gl, Camera camera, Light light, Light spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh) {
+    this(gl, camera, light, spotlight, shader, material, modelMatrix, mesh, null, null, false);
   }
 
   public void setModelMatrix(Mat4 m) {
@@ -77,6 +78,11 @@ public class Model {
     shader.setVec3(gl, "light.ambient", light.getMaterial().getAmbient());
     shader.setVec3(gl, "light.diffuse", light.getMaterial().getDiffuse());
     shader.setVec3(gl, "light.specular", light.getMaterial().getSpecular());
+
+    shader.setVec3(gl, "spotlight.position", spotlight.getPosition());
+    shader.setVec3(gl, "spotlight.ambient", spotlight.getMaterial().getAmbient());
+    shader.setVec3(gl, "spotlight.diffuse", spotlight.getMaterial().getDiffuse());
+    shader.setVec3(gl, "spotlight.specular", spotlight.getMaterial().getSpecular());
 
     shader.setVec3(gl, "material.ambient", material.getAmbient());
     shader.setVec3(gl, "material.diffuse", material.getDiffuse());
@@ -108,7 +114,7 @@ public class Model {
         float progressToSpeedTarget = (float)((currentTime - timeOfLastAnimationChange) / ANIMATION_SPEED_CHANGE_INTERVAL);
 
         animationSpeedX = lastAnimationSpeed + (lastToTargetAnimationDifference * progressToSpeedTarget);
-        
+
         //Make the animation speed y inversly proportional to x
         float animationSpeedY = MAX_ANIMATION_SPEED_Y * (1 - (animationSpeedX / MAX_ANIMATION_SPEED_X));
 

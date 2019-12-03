@@ -17,6 +17,7 @@ struct Light {
 };
 
 uniform Light light;  
+uniform Light spotlight;
 
 struct Material {
   vec3 ambient;
