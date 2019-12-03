@@ -19,6 +19,7 @@ struct Light {
 };
 
 uniform Light light;  
+uniform Light spotlight;
 
 struct Material {
   vec3 ambient;
@@ -45,10 +46,62 @@ void main() {
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
   vec3 specular = light.specular * (spec * material.specular);
 
-  vec3 result = ambient + diffuse + specular;
+  vec3 result1 = ambient + diffuse + specular;
   //fragColor = vec4(result, 1.0);
+  				
+      // ambient
+  vec3 ambient2 = spotlight.ambient * material.ambient * texture(first_texture, aTexCoord).rgb;
   
-  fragColor = vec4((mix(vec4(result, 1.0), 
-						light.ambient.x * texture(second_texture, movingTexCoord),
-					0.5f).rgb), 1.0f);
+  // diffuse
+  norm = normalize(aNormal);
+  lightDir = normalize(spotlight.position - aPos);  
+  diff = max(dot(norm, lightDir), 0.0);
+  vec3 diffuse2 = spotlight.diffuse * (diff * material.diffuse) * texture(first_texture, aTexCoord).rgb;
+  
+  // specular 
+  viewDir = normalize(viewPos - aPos);
+  reflectDir = reflect(-lightDir, norm);  
+  spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+  vec3 specular2 = spotlight.specular * (spec * material.specular);
+  
+  result1 += ambient2 + diffuse2 + specular2;
+  
+  
+    // ambient
+  ambient = light.ambient * material.ambient * texture(second_texture, movingTexCoord).rgb;
+  
+  // diffuse
+  norm = normalize(aNormal);
+  lightDir = normalize(light.position - aPos);  
+  diff = max(dot(norm, lightDir), 0.0);
+  diffuse = light.diffuse * (diff * material.diffuse) * texture(second_texture, movingTexCoord).rgb;
+  
+  // specular 
+  viewDir = normalize(viewPos - aPos);
+  reflectDir = reflect(-lightDir, norm);  
+  spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+  specular = light.specular * (spec * material.specular);
+
+  vec3 result2 = ambient + diffuse + specular;
+  				
+  // ambient
+  ambient2 = spotlight.ambient * material.ambient * texture(second_texture, movingTexCoord).rgb;
+  
+  // diffuse
+  norm = normalize(aNormal);
+  lightDir = normalize(spotlight.position - aPos);  
+  diff = max(dot(norm, lightDir), 0.0);
+  diffuse2 = spotlight.diffuse * (diff * material.diffuse) * texture(second_texture, aTexCoord).rgb;
+  
+  // specular 
+  viewDir = normalize(viewPos - aPos);
+  reflectDir = reflect(-lightDir, norm);  
+  spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+  specular2 = spotlight.specular * (spec * material.specular);
+  
+  result2 += ambient2 + diffuse2 + specular2;
+  
+  
+  
+    fragColor = vec4((mix(vec4(result1, 1.0), vec4(result2, 1.0), 0.5f).rgb), 1.0f);
 }

@@ -218,7 +218,7 @@ public class MainGLEventListener implements GLEventListener {
 
     mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     shader = new Shader(gl, "vs_animated.txt", "fs_animated.txt");
-    material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
     modelMatrix = Mat4Transform.translate(0, 8, -12f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundX(90));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
