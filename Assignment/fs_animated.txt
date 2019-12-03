@@ -91,7 +91,7 @@ void main() {
   norm = normalize(aNormal);
   lightDir = normalize(spotlight.position - aPos);  
   diff = max(dot(norm, lightDir), 0.0);
-  diffuse2 = spotlight.diffuse * (diff * material.diffuse) * texture(second_texture, aTexCoord).rgb;
+  diffuse2 = spotlight.diffuse * (diff * material.diffuse) * texture(second_texture, movingTexCoord).rgb;
   
   // specular 
   viewDir = normalize(viewPos - aPos);
