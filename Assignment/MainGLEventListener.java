@@ -27,10 +27,10 @@ public class MainGLEventListener implements GLEventListener {
 
   private static final float ROTATION_STOP_BOUNDS = 0.34f;
   private static final float MAX_ROTATION_ALL_ANGLE = 20f;
-  private static final float MAX_ROTATION_HEAD_ANGLE = 35f;
+  private static final float MAX_ROTATION_HEAD_ANGLE = 30f;
 
   private static final float SLIDE_STOP_BOUNDS = 0.1f;
-  private static final float MAX_SLIDE_POSITION = 2f;
+  private static final float MAX_SLIDE_POSITION = 1.75f;
 
 
   private TransformNode initialBodyRotation;
@@ -124,12 +124,12 @@ public class MainGLEventListener implements GLEventListener {
   private Light mainLight, spotlight;
   private SGNode snowmanRoot, spotlightRoot;
 
-  private TransformNode translateX, rotateAll, translateHead, rotateHead, rotateSpotlight;
+  private TransformNode translateX, rotateAll, translateHead, rollHead, rotateSpotlight;
   private float xPositionStart = 0, xPosition = xPositionStart;
   private Vec3 headPosition, headPositionStart;
   private float rotateAllAngleStart = 0, rotateAllAngle = rotateAllAngleStart;
   private float rotateSpotlightAngleStart = 0, rotateSpotlightAngle = rotateSpotlightAngleStart;
-  private float rotateHeadAngleStart = 0, rotateHeadAngle = rotateHeadAngleStart;
+  private float rollHeadAngleStart = 0, rollHeadAngle = rollHeadAngleStart;
 
   private static final float MAXIMUM_ANIMATION_SPEED = 1.15f;
   private static final float MINIMUM_ANIMATION_SPEED = 0.15f;
@@ -138,7 +138,7 @@ public class MainGLEventListener implements GLEventListener {
   private float currentAnimationSpeed = 0;
 
   private static final float BODY_DIAMETER = 3.5f;
-  private static final float HEAD_ELEVATION = 0.4f; //I think the head looks a little better slightly clipped into the body, "mushed together" like a real snowman
+  private static final float HEAD_HEIGHT_OFFSET = -0.2f; //I think the head looks a little better slightly clipped into the body, "mushed together" like a real snowman
   private static final float BODY_TO_HEAD_RATIO = 1.6f;
   private static final float HEAD_DIAMETER = BODY_DIAMETER / BODY_TO_HEAD_RATIO;
   private static final float HEAD_TO_NOSE_RATIO = 6.7f;
@@ -155,13 +155,15 @@ public class MainGLEventListener implements GLEventListener {
   private static final float BUTTON_SIZE = BODY_DIAMETER / BODY_TO_BUTTON_RATIO;
   private static final float ODD_BUTTONS_ANGLE =25f;
 
-  private static final float TOP_HAT_RIM_HEIGHT = 0.1f;
-  private static final float TOP_HAT_RIM_WIDTH = 1.8f;
+  //TOP HAT ----------------------------------------------------
+
   private static final float TOP_HAT_MAIN_OFFSET = -0.3f; //So that it sits a bit lower on the head
-  private static final float TOP_HAT_MAIN_HEIGHT = 1.7f;
-  private static final float TOP_HAT_MAIN_WIDTH = 1.4f;
-  private static final float TOP_HAT_BAND_TO_MAIN_HEIGHT_RATIO = 0.17f;
-  private static final float TOP_HAT_BAND_TO_MAIN_WIDTH_RATIO = 1.03f;
+  private static final float TOP_HAT_MAIN_HEIGHT = 1.45f;
+  private static final float TOP_HAT_MAIN_WIDTH = 1.3f;
+  private static final float TOP_HAT_RIM_HEIGHT = 0.15f;
+  private static final float TOP_HAT_RIM_WIDTH = 2.2f;
+  private static final float TOP_HAT_BAND_HEIGHT = 0.3f;
+  private static final float TOP_HAT_BAND_WIDTH = 1.34f;
 
   private static final float MAIN_LIGHT_X = 6.1f;
   private static final float MAIN_LIGHT_Y = 18.4f;
@@ -337,106 +339,99 @@ public class MainGLEventListener implements GLEventListener {
 
     //------------------Body----------------------
 
-    translateX = new TransformNode("translate("+xPosition+",0,0)", Mat4Transform.translate(xPosition,0,0));
-    rotateAll = new TransformNode("rotateAroundZ("+rotateAllAngle+")", Mat4Transform.rotateAroundZ(rotateAllAngle));
+    translateX = new TransformNode("Translate body X", Mat4Transform.translate(xPosition,0,0));
+    rotateAll = new TransformNode("Rotate body Z", Mat4Transform.rotateAroundZ(rotateAllAngle));
+    m = Mat4Transform.translate(0, BODY_DIAMETER / 2, 0);
+    TransformNode positionBody = new TransformNode("Move body up to the floor", m);
     NameNode body = new NameNode("Body");
     m = Mat4Transform.scale(BODY_DIAMETER, BODY_DIAMETER, BODY_DIAMETER);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, 0.5f, 0));
-    TransformNode makeBody = new TransformNode("Scale to body size and move up", m);
+    TransformNode scaleBody = new TransformNode("Scale to body size", m);
     ModelNode bodyNode = new ModelNode("Body", snowball);
+
+    //-------------------Buttons-------------------
+
+    NameNode button2 = new NameNode("button2");
+    m = Mat4Transform.scale(BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
+    m = Mat4.multiply(Mat4Transform.rotateAroundY(180), m); //Hide texture seam
+    m = Mat4.multiply(Mat4Transform.translate(0, 0, BODY_DIAMETER / 2), m);
+    TransformNode makeButton2 = new TransformNode("Scale, flip, move to body surface", m);
+    ModelNode button2Node = new ModelNode("Button2", roughStone);
+
+    NameNode button1 = new NameNode("button1");
+    Mat4 mOddButton = Mat4.multiply(Mat4Transform.rotateAroundX(ODD_BUTTONS_ANGLE), m);
+    TransformNode makeButton1 = new TransformNode("Scale, flip, move to body surface and rotate to button position", mOddButton);
+    ModelNode button1Node = new ModelNode("Button1", roughStone);
+
+    NameNode button3 = new NameNode("button3");
+    mOddButton = Mat4.multiply(Mat4Transform.rotateAroundX(-ODD_BUTTONS_ANGLE), m);
+    TransformNode makeButton3 = new TransformNode("Scale, flip, move to body surface and rotate to button position", mOddButton);
+    ModelNode button3Node = new ModelNode("Button3", roughStone);
 
     //---------------------Head-----------------
 
-    headPosition = new Vec3(0, BODY_DIAMETER, 0);
-    headPositionStart = headPosition;
-    translateHead = new TransformNode("translate(0, BODY_DIAMETER, 0)", Mat4Transform.translate(headPosition.x, headPosition.y, headPosition.z));
-    rotateHead = new TransformNode("rotateAroundZ("+rotateHeadAngle+")", Mat4Transform.rotateAroundZ(rotateHeadAngle));
+    //Called "Roll" as it is the parent of headPosition
+    rollHead = new TransformNode("Rotate head before translation", Mat4Transform.rotateAroundZ(rollHeadAngle));
+    m = Mat4Transform.translate(0, (BODY_DIAMETER / 2) + (HEAD_DIAMETER / 2) + HEAD_HEIGHT_OFFSET, 0);
+    TransformNode headPosition = new TransformNode("Move head to body surface", m);
     NameNode head = new NameNode("Head");
     m = Mat4Transform.scale(HEAD_DIAMETER, HEAD_DIAMETER, HEAD_DIAMETER);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_ELEVATION, 0));
-    TransformNode makeHead = new TransformNode("scale(1.4f,1.4f,1.4f);translate(0,0.5,0)", m);
+    TransformNode scaleHead = new TransformNode("Scale to head size", m);
     ModelNode headNode = new ModelNode("Head", snowball);
 
     //-------------------Nose-------------------
 
     NameNode nose = new NameNode("Nose");
     m = Mat4Transform.scale(NOSE_SIZE, NOSE_SIZE, NOSE_LENGTH);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_ELEVATION + HEAD_DIAMETER + NOSE_SIZE, HEAD_DIAMETER - NOSE_LENGTH));
-    TransformNode makeNoseBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    m = Mat4.multiply(Mat4Transform.rotateAroundY(180), m); //Hide texture seam
+    m = Mat4.multiply(Mat4Transform.translate(0, 0, HEAD_DIAMETER / 2), m);
+    TransformNode makeNose = new TransformNode("Scale, flip, move to head surface, scale", m);
     ModelNode noseNode = new ModelNode("Nose", smoothStone);
 
     //-------------------Mouth-------------------
-
     NameNode mouth = new NameNode("Mouth");
     m = Mat4Transform.scale(NOSE_LENGTH, NOSE_SIZE, NOSE_SIZE);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER, HEAD_DIAMETER));
+    m = Mat4.multiply(Mat4Transform.rotateAroundY(180), m); //Hide texture seam
+    m = Mat4.multiply(Mat4Transform.translate(0, 0, HEAD_DIAMETER / 2), m);
     m = Mat4.multiply(Mat4Transform.rotateAroundX(MOUTH_ANGLE), m);
-    TransformNode makeMouthBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    TransformNode makeMouth = new TransformNode("Scale, flip, move to head surface, scale, rotate to mouth position", m);
     ModelNode mouthNode = new ModelNode("Mouth", smoothStone);
 
     //-------------------Eyes-------------------
 
     NameNode leftEye = new NameNode("leftEye");
     m = Mat4Transform.scale(EYE_SIZE, EYE_SIZE, EYE_SIZE);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER +(EYE_SIZE / 2), 0));
-    m = Mat4.multiply(m, Mat4Transform.rotateAroundX(EYE_ANGLE_X));
-    m = Mat4.multiply(m, Mat4Transform.rotateAroundY(-EYE_ANGLE_Y));
-    m = Mat4.multiply(m, Mat4Transform.translate(0, 0, HEAD_DIAMETER + (EYE_SIZE / 2)));
-    TransformNode makeLeftEyeBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    m = Mat4.multiply(Mat4Transform.rotateAroundY(180), m); //Hide texture seam
+    m = Mat4.multiply(Mat4Transform.translate(0, 0, HEAD_DIAMETER / 2), m);
+    m = Mat4.multiply(Mat4Transform.rotateAroundX(EYE_ANGLE_X), m);
+    Mat4 mLeft = Mat4.multiply(Mat4Transform.rotateAroundY(-EYE_ANGLE_Y), m);
+    TransformNode makeLeftEye = new TransformNode("Scale, flip, move to head surface, rotate to left eye position", mLeft);
     ModelNode leftEyeNode = new ModelNode("LeftEye", roughStone);
 
     NameNode rightEye = new NameNode("rightEye");
-    m = Mat4Transform.scale(EYE_SIZE, EYE_SIZE, EYE_SIZE);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, HEAD_DIAMETER + (EYE_SIZE / 2), 0));
-    m = Mat4.multiply(m, Mat4Transform.rotateAroundX(EYE_ANGLE_X));
-    m = Mat4.multiply(m, Mat4Transform.rotateAroundY(EYE_ANGLE_Y));
-    m = Mat4.multiply(m, Mat4Transform.translate(0, 0, HEAD_DIAMETER + (EYE_SIZE / 2)));
-    TransformNode makeRightEyeBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    m = Mat4.multiply(Mat4Transform.rotateAroundY(EYE_ANGLE_Y), m);
+    TransformNode makeRightEye = new TransformNode("Scale, flip, move to head surface, rotate to right eye position", m);
     ModelNode rightEyeNode = new ModelNode("RightEye", roughStone);
-
-    //-------------------Buttons-------------------
-
-    NameNode button1 = new NameNode("button1");
-    m = Mat4Transform.scale(BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
-    m = Mat4.multiply(Mat4Transform.rotateAroundX(0), m);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, BODY_DIAMETER - (BUTTON_SIZE / 2), 0));
-    m = Mat4.multiply(m, Mat4Transform.rotateAroundX(ODD_BUTTONS_ANGLE));
-    m = Mat4.multiply(m, Mat4Transform.translate(0, 0, BODY_DIAMETER - (BUTTON_SIZE / 2)));
-    TransformNode makeButton1Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
-    ModelNode button1Node = new ModelNode("Button1", roughStone);
-
-    NameNode button2 = new NameNode("button2");
-    m = Mat4Transform.scale(BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, BODY_DIAMETER - (BUTTON_SIZE / 2), BODY_DIAMETER - (BUTTON_SIZE / 2)));
-    TransformNode makeButton2Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
-    ModelNode button2Node = new ModelNode("Button2", roughStone);
-
-    NameNode button3 = new NameNode("button3");
-    m = Mat4Transform.scale(BUTTON_SIZE, BUTTON_SIZE, BUTTON_SIZE);
-    m = Mat4.multiply(m, Mat4Transform.translate(0, BODY_DIAMETER - (BUTTON_SIZE / 2), 0));
-    m = Mat4.multiply(m, Mat4Transform.rotateAroundX(-ODD_BUTTONS_ANGLE));
-    m = Mat4.multiply(m, Mat4Transform.translate(0, 0, BODY_DIAMETER - (BUTTON_SIZE / 2)));
-    TransformNode makeButton3Branch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
-    ModelNode button3Node = new ModelNode("Button3", roughStone);
 
     //-------------------Top hat-------------------
 
-    NameNode topHatBody = new NameNode("topHatBody");
+    //TODO offset for y
+    m = Mat4Transform.translate(0, (HEAD_DIAMETER / 2) + (TOP_HAT_MAIN_HEIGHT / 2) + TOP_HAT_MAIN_OFFSET, 0);
+    TransformNode positionTopHatBody = new TransformNode("Move top hat to top of head", m);
+    NameNode topHatBody = new NameNode("Top hat body");
     m = Mat4Transform.scale(TOP_HAT_MAIN_WIDTH, TOP_HAT_MAIN_HEIGHT, TOP_HAT_MAIN_WIDTH);
-    m = Mat4.multiply(Mat4Transform.translate(0, (HEAD_DIAMETER / 2) + TOP_HAT_MAIN_HEIGHT + TOP_HAT_MAIN_OFFSET, 0), m);
-    TransformNode makeTopHatBodyBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    TransformNode scaleTopHatBody = new TransformNode("Scale to top hat size", m);
     ModelNode topHatBodyNode = new ModelNode("topHatBody", topHatMain);
 
     NameNode topHatRim = new NameNode("topHatRim");
     m = Mat4Transform.scale(TOP_HAT_RIM_WIDTH, TOP_HAT_RIM_HEIGHT, TOP_HAT_RIM_WIDTH);
-    m = Mat4.multiply(Mat4Transform.translate(0, (-TOP_HAT_MAIN_HEIGHT / 4), 0), m);
-    TransformNode makeTopHatRimBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    m = Mat4.multiply(Mat4Transform.translate(0, -TOP_HAT_MAIN_HEIGHT / 2, 0), m);
+    TransformNode makeTopHatRim = new TransformNode("Scale and move to bottom of top hat", m);
     ModelNode topHatRimNode = new ModelNode("topHatRim", topHatMain);
 
     NameNode topHatBand = new NameNode("topHatBand");
-    m = Mat4Transform.scale( TOP_HAT_BAND_TO_MAIN_WIDTH_RATIO, TOP_HAT_BAND_TO_MAIN_HEIGHT_RATIO,  TOP_HAT_BAND_TO_MAIN_WIDTH_RATIO);
-    m = Mat4.multiply(Mat4Transform.translate(0, (-TOP_HAT_MAIN_HEIGHT / 3) + TOP_HAT_BAND_TO_MAIN_HEIGHT_RATIO + TOP_HAT_RIM_HEIGHT, 0), m);
-    TransformNode makeTopHatBandBranch = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
+    m = Mat4Transform.scale(TOP_HAT_BAND_WIDTH, TOP_HAT_BAND_HEIGHT, TOP_HAT_BAND_WIDTH);
+    m = Mat4.multiply(Mat4Transform.translate(0, (-TOP_HAT_MAIN_HEIGHT / 2) + (TOP_HAT_BAND_HEIGHT / 2), 0), m);
+    TransformNode makeTopHatBand = new TransformNode("scale(0,6f,1.4f,0.6f);translate(0,0.5,0)", m);
     ModelNode topHatBandNode = new ModelNode("topHatBand", topHatRibbon);
 
     //TODO All of the above is done pretty incorrectly, fix!
@@ -445,44 +440,47 @@ public class MainGLEventListener implements GLEventListener {
 
     snowmanRoot.addChild(translateX);
       translateX.addChild(rotateAll);
-        rotateAll.addChild(body);
-          body.addChild(makeBody);
-            makeBody.addChild(bodyNode);
-         body.addChild(translateHead);
-           translateHead.addChild(rotateHead);
-             rotateHead.addChild(head);
-               head.addChild(makeHead);
-                 makeHead.addChild(headNode);
-               head.addChild(nose);
-                 nose.addChild(makeNoseBranch);
-                   makeNoseBranch.addChild(noseNode);
-               head.addChild(mouth);
-                 mouth.addChild(makeMouthBranch);
-                   makeMouthBranch.addChild(mouthNode);
-               head.addChild(leftEye);
-                 leftEye.addChild(makeLeftEyeBranch);
-                   makeLeftEyeBranch.addChild(leftEyeNode);
-               head.addChild(rightEye);
-                 rightEye.addChild(makeRightEyeBranch);
-                   makeRightEyeBranch.addChild(rightEyeNode);
-               head.addChild(topHatBody);
-                 topHatBody.addChild(makeTopHatBodyBranch);
-                   makeTopHatBodyBranch.addChild(topHatBodyNode);
-                 makeTopHatBodyBranch.addChild(topHatRim);
-                   topHatRim.addChild(makeTopHatRimBranch);
-                     makeTopHatRimBranch.addChild(topHatRimNode);
-                 makeTopHatBodyBranch.addChild(topHatBand);
-                   topHatBand.addChild(makeTopHatBandBranch);
-                     makeTopHatBandBranch.addChild(topHatBandNode);
-         body.addChild(button1);
-           button1.addChild(makeButton1Branch);
-             makeButton1Branch.addChild(button1Node);
-         body.addChild(button2);
-           button2.addChild(makeButton2Branch);
-             makeButton2Branch.addChild(button2Node);
-         body.addChild(button3);
-           button3.addChild(makeButton3Branch);
-             makeButton3Branch.addChild(button3Node);
+        rotateAll.addChild(positionBody);
+          positionBody.addChild(body);
+            body.addChild(scaleBody);
+              scaleBody.addChild(bodyNode);
+            body.addChild(button1);
+              button1.addChild(makeButton1);
+                makeButton1.addChild(button1Node);
+            body.addChild(button2);
+              button2.addChild(makeButton2);
+                makeButton2.addChild(button2Node);
+            body.addChild(button3);
+              button3.addChild(makeButton3);
+                makeButton3.addChild(button3Node);
+
+            body.addChild(rollHead);
+              rollHead.addChild(headPosition);
+                headPosition.addChild(head);
+                  head.addChild(scaleHead);
+                    scaleHead.addChild(headNode);
+                    head.addChild(nose);
+                      nose.addChild(makeNose);
+                        makeNose.addChild(noseNode);
+                    head.addChild(mouth);
+                      mouth.addChild(makeMouth);
+                        makeMouth.addChild(mouthNode);
+                    head.addChild(leftEye);
+                      leftEye.addChild(makeLeftEye);
+                        makeLeftEye.addChild(leftEyeNode);
+                    head.addChild(rightEye);
+                      rightEye.addChild(makeRightEye);
+                        makeRightEye.addChild(rightEyeNode);
+                    head.addChild(positionTopHatBody);
+                      positionTopHatBody.addChild(topHatBody);
+                        topHatBody.addChild(scaleTopHatBody);
+                          scaleTopHatBody.addChild(topHatBodyNode);
+                        topHatBody.addChild(topHatRim);
+                          topHatRim.addChild(makeTopHatRim);
+                            makeTopHatRim.addChild(topHatRimNode);
+                        topHatBody.addChild(topHatBand);
+                          topHatBand.addChild(makeTopHatBand);
+                            makeTopHatBand.addChild(topHatBandNode);
     snowmanRoot.update();  // IMPORTANT – must be done every time any part of the scene graph changes
     // snowmanRoot.print(0, false);
     // System.exit(0);
@@ -500,7 +498,6 @@ public class MainGLEventListener implements GLEventListener {
     spotlightActive = !spotlightActive;
     spotlight.toggle();
   }
-
 
   private void render(GL3 gl) {
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
@@ -685,19 +682,15 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   private void roll() {
-    //We do the translations in two goes, so that the rotation occurs from the centre of the body
-    rotateHeadAngle = MAX_ROTATION_HEAD_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
-    Mat4 translateRadius = Mat4Transform.translate(0, BODY_DIAMETER / 2, 0);
-    Mat4 m = Mat4.multiply(Mat4Transform.rotateAroundZ(rotateHeadAngle), translateRadius);
-    m = Mat4.multiply(translateRadius, m);
-    translateHead.setTransform(m);
+    rollHeadAngle = MAX_ROTATION_HEAD_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
+    Mat4 m = Mat4Transform.rotateAroundZ(rollHeadAngle);
+    rollHead.setTransform(m);
 
     //If we're stopping the animation
     if (stoppingAnimation && slowingDown) {
       //If the current rotation is within the stop bounds
-      if (rotateHeadAngle > rotateHeadAngleStart - ROTATION_STOP_BOUNDS && rotateHeadAngle < rotateHeadAngleStart + ROTATION_STOP_BOUNDS) {
-        rotateHead.setTransform(Mat4Transform.rotateAroundZ(rotateHeadAngleStart));
-        translateHead.setTransform(Mat4Transform.translate(headPositionStart));
+      if (rollHeadAngle > rollHeadAngleStart - ROTATION_STOP_BOUNDS && rollHeadAngle < rollHeadAngleStart + ROTATION_STOP_BOUNDS) {
+        rollHead.setTransform(Mat4Transform.rotateAroundZ(rollHeadAngleStart));
         switch(currentAnimation) {
           case Roll :
             reset();
