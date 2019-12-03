@@ -202,7 +202,7 @@ public class MainGLEventListener implements GLEventListener {
     mainLight.setPosition(new Vec3(MAIN_LIGHT_X, MAIN_LIGHT_Y, MAIN_LIGHT_Z));
     mainLight.setCamera(camera);
 
-    spotlight = new Light(gl, mainLightAmbient, mainLightDiffuse, mainLightSpecular);
+    spotlight = new Light(gl, mainLightAmbient, mainLightDiffuse, mainLightSpecular, (float)Math.cos(Math.toRadians(12.5f)));
     spotlight.setCamera(camera);
 
     //-----------Floor--------------------
@@ -577,7 +577,11 @@ public class MainGLEventListener implements GLEventListener {
     rotateSpotlight.setTransform(Mat4Transform.rotateAroundY(rotateSpotlightAngle));
     spotlightRoot.update();
 
-    spotlight.setPosition(getSpotlightPosition());  // changing light position each frame
+    float xDir = (float)Math.sin(Math.toRadians(rotateSpotlightAngle + 90));
+    float zDir = (float)Math.cos(Math.toRadians(rotateSpotlightAngle + 90));
+
+    spotlight.setDirection(xDir, -1, zDir);
+    spotlight.setPosition(getSpotlightPosition());
   }
 
   private void rock() {

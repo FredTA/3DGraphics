@@ -14,6 +14,8 @@ struct Light {
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
+  float cuttoff;
+  vec3 direction;
 };
 
 uniform Light light;  
@@ -46,22 +48,28 @@ void main() {
 
   vec3 result = ambient + diffuse + specular;
   
-    // ambient
-  vec3 ambient2 = spotlight.ambient * material.ambient * texture(first_texture, aTexCoord).rgb;
+  //------------spotlight-------------
   
-  // diffuse
-  norm = normalize(aNormal);
-  lightDir = normalize(spotlight.position - aPos);  
-  diff = max(dot(norm, lightDir), 0.0);
-  vec3 diffuse2 = spotlight.diffuse * (diff * material.diffuse) * texture(first_texture, aTexCoord).rgb;
+  lightDir = normalize(spotlight.position - aPos); 
+  float theta = dot(lightDir, normalize(-spotlight.direction));
   
-  // specular 
-  viewDir = normalize(viewPos - aPos);
-  reflectDir = reflect(-lightDir, norm);  
-  spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-  vec3 specular2 = spotlight.specular * (spec * material.specular);
-  
-  result += ambient2 + diffuse2 + specular2;
+  if (theta > spotlight.cuttoff){
+      // ambient
+	  vec3 ambient2 = spotlight.ambient * material.ambient * texture(first_texture, aTexCoord).rgb;
+	  
+	  // diffuse
+	  norm = normalize(aNormal); 
+	  diff = max(dot(norm, lightDir), 0.0);
+	  vec3 diffuse2 = spotlight.diffuse * (diff * material.diffuse) * texture(first_texture, aTexCoord).rgb;
+	  
+	  // specular 
+	  viewDir = normalize(viewPos - aPos);
+	  reflectDir = reflect(-lightDir, norm);  
+	  spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	  vec3 specular2 = spotlight.specular * (spec * material.specular);
+	  
+	  result += ambient2 + diffuse2 + specular2;
+  } 
   
   fragColor = vec4(result, 1.0);
 }

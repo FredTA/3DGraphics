@@ -7,6 +7,7 @@ public class Light {
 
   private Material material;
   private Vec3 position;
+  private Vec3 direction;
   private Mat4 model;
   private Shader shader;
   private Camera camera;
@@ -14,6 +15,8 @@ public class Light {
   private Vec3 originalAmbient;
   private Vec3 originalDiffuse;
   private Vec3 originalSpecular;
+
+  private float cutoff;
 
   private float intensity = 1;
   private static final float INTENSITY_STEP = 0.25f;
@@ -51,6 +54,12 @@ public class Light {
     shader = new Shader(gl, "vs_light.txt", "fs_light.txt");
     fillBuffers(gl);
   }
+
+    public Light(GL3 gl, Vec3 ambient, Vec3 diffuse, Vec3 specular, float cutoff) {
+      this(gl, ambient, diffuse, specular);
+      this.cutoff = cutoff;
+      direction = new Vec3(0, -1, 0);
+    }
 
   public void decreaseLightIntensity() {
     if (intensity > 0) {
@@ -101,8 +110,22 @@ public class Light {
     position.z = z;
   }
 
+  public void setDirection(float x, float y, float z) {
+    direction.x = x;
+    direction.y = y;
+    direction.z = z;
+  }
+
+  public Vec3 getDirection(){
+    return direction;
+  }
+
   public Vec3 getPosition() {
     return position;
+  }
+
+  public float getCutoff(){
+    return cutoff;
   }
 
   public void setMaterial(Material m) {
