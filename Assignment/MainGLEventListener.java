@@ -245,19 +245,21 @@ public class MainGLEventListener implements GLEventListener {
 
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
-    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
+    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.2f, 0.2f, 0.2f), 32.0f);
     modelMatrix = new Mat4(1);
     snowball = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, textureId1);
 
     //------------Nose & Mouth---------------
 
-    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
+    //Smoth, polished stone, so we should have a greater specular
+    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = new Mat4(1);
     smoothStone = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, stoneSmoothTexture);
 
     //------------Eyes and buttons---------------
 
-    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
+    //Rough stone, so less specular
+    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0, 0, 0), 32.0f);
     modelMatrix = new Mat4(1);
     roughStone = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, stoneRoughTexture);
 
@@ -265,11 +267,13 @@ public class MainGLEventListener implements GLEventListener {
 
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
-    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
+    //Top hat material should have little specular
+    material = new Material(new Vec3(0.8f, 0.8f, 0.8f), new Vec3(0.8f, 0.8f, 0.8f), new Vec3(0.1f, 0.1f, 0.1f), 32.0f);
     modelMatrix = new Mat4(1);
     topHatMain = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatMainTexture);
 
-    material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.0f, 0.0f, 0.0f), 32.0f);
+    //Top hat ribon should have lots of specular
+    material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
     modelMatrix = new Mat4(1);
     topHatRibbon = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatBandTexture);
 
@@ -292,12 +296,6 @@ public class MainGLEventListener implements GLEventListener {
    TransformNode scaleSpotlightPole2 = new TransformNode("Scale spotlight pole 2", Mat4Transform.scale(5f, 0.4f, 0.4f));
    ModelNode spotlightPole2Node = new ModelNode("Spotlight Pole2 ", metal);
 
-
-   // NameNode spotLightLamp = new NameNode("Spotlight Lamp");
-   // TransformNode makeSpotlightLamp = new TransformNode("move light to end of pole", Mat4Transform.translate(2.5f - 0.4f, -0.2f -0.075f, 0));
-   // TransformNode scaleSpotlightLamp = new TransformNode("Scale spotlight lamp", Mat4Transform.scale(0.8f, 0.15f, 0.8f));
-   // LightNode spotlightLampNode = new LightNode("Spotlight lamp node", spotlight);
-
    spotlight.setPosition(new Vec3(spotlightLampBaseX, spotlightLampBaseY, spotlightLampBaseZ));
    //spotLight.setPosition(new Vec3(MAIN_LIGHT_X, MAIN_LIGHT_Y, MAIN_LIGHT_Z));
 
@@ -310,10 +308,6 @@ public class MainGLEventListener implements GLEventListener {
          rotateSpotlight.addChild(makeSpotlightPole2);
            makeSpotlightPole2.addChild(scaleSpotlightPole2);
              scaleSpotlightPole2.addChild(spotlightPole2Node);
-           // makeSpotlightPole2.addChild(spotLightLamp);
-           //   spotLightLamp.addChild(makeSpotlightLamp);
-           //     makeSpotlightLamp.addChild(scaleSpotlightLamp);
-           //       scaleSpotlightLamp.addChild(spotlightLampNode);
    spotlightRoot.update();
 
    //------------------------------Making the snoman---------------------------
