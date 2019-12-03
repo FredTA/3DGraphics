@@ -66,6 +66,15 @@ public class Light {
     }
   }
 
+  public void toggle() {
+    if (intensity == 1) {
+      intensity = 0;
+    } else {
+      intensity = 1;
+    }
+    changeMaterialColourIntensities();
+  }
+
   public void changeMaterialColourIntensities() {
     Vec3 newAmbient = new Vec3(originalAmbient);
     Vec3 newDiffuse = new Vec3(originalDiffuse);
@@ -114,21 +123,6 @@ public class Light {
     model = Mat4.multiply(Mat4Transform.translate(position), model);
 
     Mat4 mvpMatrix = Mat4.multiply(camera.getPerspectiveMatrix(), Mat4.multiply(camera.getViewMatrix(), model));
-
-    shader.use(gl);
-    shader.setFloatArray(gl, "mvpMatrix", mvpMatrix.toFloatArrayForGLSL());
-
-    gl.glBindVertexArray(vertexArrayId[0]);
-    gl.glDrawElements(GL.GL_TRIANGLES, indices.length, GL.GL_UNSIGNED_INT, 0);
-    gl.glBindVertexArray(0);
-  }
-
-  public void render(GL3 gl, Mat4 modelMatrix) {
-    //Mat4 model = new Mat4(1);
-    //model = Mat4.multiply(Mat4Transform.scale(0.3f,0.3f,0.3f), model);
-    //model = Mat4.multiply(Mat4Transform.translate(position), model);
-
-    Mat4 mvpMatrix = Mat4.multiply(camera.getPerspectiveMatrix(), Mat4.multiply(camera.getViewMatrix(), modelMatrix));
 
     shader.use(gl);
     shader.setFloatArray(gl, "mvpMatrix", mvpMatrix.toFloatArrayForGLSL());

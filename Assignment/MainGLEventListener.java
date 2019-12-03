@@ -166,7 +166,11 @@ public class MainGLEventListener implements GLEventListener {
   private static final float MAIN_LIGHT_Y = 18.4f;
   private static final float MAIN_LIGHT_Z = 15.0f;
 
-  private boolean spotlightActive = false;
+  private float spotlightLampBaseX = -9.5f;
+  private float spotlightLampBaseY = 13;
+  private float spotlightLampBaseZ = 0;
+
+  private boolean spotlightActive = true;
   private static final float SPOTLIGHT_ROTATION_SPEED = 90f;
   private double lastTime;
 
@@ -289,10 +293,12 @@ public class MainGLEventListener implements GLEventListener {
    ModelNode spotlightPole2Node = new ModelNode("Spotlight Pole2 ", metal);
 
 
-   NameNode spotLightLamp = new NameNode("Spotlight Lamp");
-   TransformNode makeSpotlightLamp = new TransformNode("move light to end of pole", Mat4Transform.translate(2.5f - 0.4f, -0.2f -0.075f, 0));
-   TransformNode scaleSpotlightLamp = new TransformNode("Scale spotlight lamp", Mat4Transform.scale(0.8f, 0.15f, 0.8f));
-   LightNode spotlightLampNode = new LightNode("Spotlight lamp node", spotlight);
+   // NameNode spotLightLamp = new NameNode("Spotlight Lamp");
+   // TransformNode makeSpotlightLamp = new TransformNode("move light to end of pole", Mat4Transform.translate(2.5f - 0.4f, -0.2f -0.075f, 0));
+   // TransformNode scaleSpotlightLamp = new TransformNode("Scale spotlight lamp", Mat4Transform.scale(0.8f, 0.15f, 0.8f));
+   // LightNode spotlightLampNode = new LightNode("Spotlight lamp node", spotlight);
+
+   spotlight.setPosition(new Vec3(spotlightLampBaseX, spotlightLampBaseY, spotlightLampBaseZ));
    //spotLight.setPosition(new Vec3(MAIN_LIGHT_X, MAIN_LIGHT_Y, MAIN_LIGHT_Z));
 
    spotlightRoot.addChild(spotlightPole);
@@ -304,10 +310,10 @@ public class MainGLEventListener implements GLEventListener {
          rotateSpotlight.addChild(makeSpotlightPole2);
            makeSpotlightPole2.addChild(scaleSpotlightPole2);
              scaleSpotlightPole2.addChild(spotlightPole2Node);
-           makeSpotlightPole2.addChild(spotLightLamp);
-             spotLightLamp.addChild(makeSpotlightLamp);
-               makeSpotlightLamp.addChild(scaleSpotlightLamp);
-                 scaleSpotlightLamp.addChild(spotlightLampNode);
+           // makeSpotlightPole2.addChild(spotLightLamp);
+           //   spotLightLamp.addChild(makeSpotlightLamp);
+           //     makeSpotlightLamp.addChild(scaleSpotlightLamp);
+           //       scaleSpotlightLamp.addChild(spotlightLampNode);
    spotlightRoot.update();
 
    //------------------------------Making the snoman---------------------------
@@ -477,14 +483,14 @@ public class MainGLEventListener implements GLEventListener {
 
   public void toggleSpotlight(){
     spotlightActive = !spotlightActive;
+    spotlight.toggle();
   }
 
 
   private void render(GL3 gl) {
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-    //light.setPosition(getLightPosition());  // changing light position each frame
     mainLight.render(gl);
-    //spotlight.render(gl);
+    spotlight.render(gl);
     floor.render(gl);
     background.render(gl);
     crate.render(gl);
@@ -576,6 +582,8 @@ public class MainGLEventListener implements GLEventListener {
     rotateSpotlightAngle += SPOTLIGHT_ROTATION_SPEED * deltaTime;
     rotateSpotlight.setTransform(Mat4Transform.rotateAroundY(rotateSpotlightAngle));
     spotlightRoot.update();
+
+    spotlight.setPosition(getSpotlightPosition());  // changing light position each frame
   }
 
   private void rock() {
@@ -720,11 +728,14 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   // The light's postion is continually being changed, so needs to be calculated for each frame.
-  private Vec3 getLightPosition() {
+  private Vec3 getSpotlightPosition() {
     double elapsedTime = getSeconds() - programStartTime;
-    float x = 5.0f*(float)(Math.sin(Math.toRadians(elapsedTime*50)));
-    float y = 2.7f;
-    float z = 5.0f*(float)(Math.cos(Math.toRadians(elapsedTime*50)));
+
+    //float x = spotlightLampBaseX - 4.5f*(float)(Math.sin(Math.toRadians(elapsedTime*90)));
+    float x = spotlightLampBaseX - 4.5f*(float)(Math.sin(Math.toRadians(rotateSpotlightAngle - 90)));
+    float y = spotlightLampBaseY;
+    // float z = spotlightLampBaseZ - 4.5f*(float)(Math.cos(Math.toRadians(elapsedTime*90)));
+    float z = spotlightLampBaseZ - 4.5f*(float)(Math.cos(Math.toRadians(rotateSpotlightAngle - 90)));
     return new Vec3(x,y,z);
     //return new Vec3(5f,3.4f,5f);
   }
