@@ -55,13 +55,16 @@ public class Main extends JFrame implements ActionListener {
       b = new JButton("Slide, Rock and Roll");
       b.addActionListener(this);
       p.add(b);
+      b = new JButton("Reset");
+      b.addActionListener(this);
+      p.add(b);
+      b = new JButton("Toggle Spotlight");
+      b.addActionListener(this);
+      p.add(b);
       b = new JButton("Decrease Main Light");
       b.addActionListener(this);
       p.add(b);
       b = new JButton("Increase Main Light");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("Reset");
       b.addActionListener(this);
       p.add(b);
     this.add(p, BorderLayout.SOUTH);
@@ -92,6 +95,9 @@ public class Main extends JFrame implements ActionListener {
     }
     else if (e.getActionCommand().equalsIgnoreCase("reset")) {
       glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.None);
+    }
+    else if (e.getActionCommand().equalsIgnoreCase("Toggle Spotlight")) {
+      glEventListener.toggleSpotlight();
     }
     else if (e.getActionCommand().equalsIgnoreCase("Decrease Main Light")) {
       glEventListener.decreaseLightIntensity();

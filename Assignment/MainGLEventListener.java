@@ -60,6 +60,7 @@ public class MainGLEventListener implements GLEventListener {
     gl.glCullFace(GL.GL_BACK);   // default is 'back', assuming CCW
     initialise(gl);
     programStartTime = getSeconds();
+    lastTime = getSeconds();
   }
 
   /* Called to indicate the drawing surface has been moved and/or resized  */
@@ -113,21 +114,20 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   // ***************************************************
-  /* THE SCENE
-   * Now define all the methods to handle the scene.
-   * This will be added to in later examples.
-   */
+  // THE SCENE
+
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background, crate;
+  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background, crate, metal;
   private Light mainLight;
-  private SGNode snowmanRoot;
+  private SGNode snowmanRoot, spotlightRoot;
 
-  private TransformNode translateX, rotateAll, translateHead, rotateHead;
+  private TransformNode translateX, rotateAll, translateHead, rotateHead, rotateSpotlight;
   private float xPositionStart = 0, xPosition = xPositionStart;
   private Vec3 headPosition, headPositionStart;
   private float rotateAllAngleStart = 0, rotateAllAngle = rotateAllAngleStart;
+  private float rotateSpotlightAngleStart = 0, rotateSpotlightAngle = rotateSpotlightAngleStart;
   private float rotateHeadAngleStart = 0, rotateHeadAngle = rotateHeadAngleStart;
 
   private static final float MAXIMUM_ANIMATION_SPEED = 1.15f;
@@ -166,6 +166,10 @@ public class MainGLEventListener implements GLEventListener {
   private static final float MAIN_LIGHT_Y = 18.4f;
   private static final float MAIN_LIGHT_Z = 15.0f;
 
+  private boolean spotlightActive = false;
+  private static final float SPOTLIGHT_ROTATION_SPEED = 90f;
+  private double lastTime;
+
 
   private void initialise(GL3 gl) {
     createRandomNumbers();
@@ -175,6 +179,8 @@ public class MainGLEventListener implements GLEventListener {
 
     int[] crateTexture = TextureLibrary.loadTexture(gl, "textures/container2.jpg");
     int[] crateSpeculularTexture = TextureLibrary.loadTexture(gl, "textures/container2_specular.jpg");
+
+    int[] spotlightTexture = TextureLibrary.loadTexture(gl, "textures/metal.jpg");
 
     int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/snow.jpg");
     int[] stoneRoughTexture = TextureLibrary.loadTexture(gl, "textures/stone.jpg");
@@ -221,6 +227,14 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(4.2f, 4.2f, 4.2f));
     crate = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
 
+    //-----------Spotlight--------------------
+
+    mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
+    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    material = new Material(new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.48f, 0.53f, 0.6f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    modelMatrix = new Mat4(1);
+    metal = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, spotlightTexture);
+
     //------------Body & Head--------------
 
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
@@ -253,7 +267,35 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = new Mat4(1);
     topHatRibbon = new Model(gl, camera, mainLight, shader, material, modelMatrix, mesh, topHatBandTexture);
 
+   //---------------------------Making the spotlight--------------------------
 
+   spotlightRoot = new NameNode("Spotlight Root");
+   NameNode spotlightPole = new NameNode("Spotlight pole");
+   Mat4 m = Mat4Transform.translate(-9.5f, 6f, 0f);
+   //m = Mat4.multiply(m, Mat4Transform.scale(0.6f, 14f, 0.6f));
+   TransformNode makeSpotlightPole = new TransformNode("Move pole and scale", m);
+   TransformNode scaleSpotlightPole = new TransformNode("Scale spotlight pole", Mat4Transform.scale(0.6f, 12f, 0.6f));
+   ModelNode spotlightPoleNode = new ModelNode("Spotlight Pole", metal);
+
+   NameNode spotlightPole2 = new NameNode("Spotlight pole 2");
+   rotateSpotlight = new TransformNode("Rotate spotlight", Mat4Transform.rotateAroundY(rotateSpotlightAngle));
+   m = Mat4Transform.translate(2.2f, 6f, 0f);
+   m = Mat4.multiply(m, Mat4Transform.rotateAroundZ(35));
+   // m = Mat4.multiply(m, Mat4Transform.scale(3f, 0.4f, 0.4f));
+   TransformNode makeSpotlightPole2 = new TransformNode("Move pole 2 and rotate", m);
+   TransformNode scaleSpotlightPole2 = new TransformNode("Scale spotlight pole 2", Mat4Transform.scale(5f, 0.4f, 0.4f));
+   ModelNode spotlightPole2Node = new ModelNode("Spotlight Pole2 ", metal);
+
+   spotlightRoot.addChild(spotlightPole);
+    spotlightPole.addChild(makeSpotlightPole);
+      makeSpotlightPole.addChild(scaleSpotlightPole);
+        scaleSpotlightPole.addChild(spotlightPoleNode);
+      makeSpotlightPole.addChild(spotlightPole2);
+       spotlightPole2.addChild(rotateSpotlight);
+         rotateSpotlight.addChild(makeSpotlightPole2);
+           makeSpotlightPole2.addChild(scaleSpotlightPole2);
+             scaleSpotlightPole2.addChild(spotlightPole2Node);
+   spotlightRoot.update();
 
    //------------------------------Making the snoman---------------------------
 
@@ -264,7 +306,7 @@ public class MainGLEventListener implements GLEventListener {
     translateX = new TransformNode("translate("+xPosition+",0,0)", Mat4Transform.translate(xPosition,0,0));
     rotateAll = new TransformNode("rotateAroundZ("+rotateAllAngle+")", Mat4Transform.rotateAroundZ(rotateAllAngle));
     NameNode body = new NameNode("Body");
-    Mat4 m = Mat4Transform.scale(BODY_DIAMETER, BODY_DIAMETER, BODY_DIAMETER);
+    m = Mat4Transform.scale(BODY_DIAMETER, BODY_DIAMETER, BODY_DIAMETER);
     m = Mat4.multiply(m, Mat4Transform.translate(0, 0.5f, 0));
     TransformNode makeBody = new TransformNode("Scale to body size and move up", m);
     ModelNode bodyNode = new ModelNode("Body", snowball);
@@ -420,6 +462,11 @@ public class MainGLEventListener implements GLEventListener {
     mainLight.increaseLightIntensity();
   }
 
+  public void toggleSpotlight(){
+    spotlightActive = !spotlightActive;
+    System.out.println("toggle spotlight");
+  }
+
   //private double animationStartTime;
   //private double lastElapsedTime;
 
@@ -432,10 +479,19 @@ public class MainGLEventListener implements GLEventListener {
     crate.render(gl);
     //updateBranches();
     snowmanRoot.draw(gl);
+    spotlightRoot.draw(gl);
 
     if (currentAnimation != AnimationSelections.None) {
-      handleAnimations();
+      handleSnowmanAnimations();
     }
+
+    if (spotlightActive) {
+      rotateSpotlight();
+    }
+
+    lastTime = getSeconds();
+
+
   }
 
   private double elapsedTime;
@@ -446,7 +502,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private float lastSinMagnitude = -1;
 
-  private void handleAnimations() {
+  private void handleSnowmanAnimations() {
 
     elapsedTime = getSeconds() - animationStartTime;
 
@@ -457,10 +513,10 @@ public class MainGLEventListener implements GLEventListener {
       }
       //Else if we are stopping, and still above the min speed
       else if (stoppingAnimation && currentAnimationSpeed > 0){
-
         float sinMagnitude = Math.abs((float)Math.sin(elapsedTime));
 
         if (lastSinMagnitude != -1) {
+          //If we have just started decreasing, towards 0
           if (Math.abs(sinMagnitude) > 0.99f && sinMagnitude < lastSinMagnitude) {
             slowingDown = true;
             animationSpeedAtTimeOfStop = currentAnimationSpeed;
@@ -471,7 +527,6 @@ public class MainGLEventListener implements GLEventListener {
           }
         }
         lastSinMagnitude = sinMagnitude;
-
       }
 
       lastAnimationSpeed = currentAnimationSpeed;
@@ -505,6 +560,14 @@ public class MainGLEventListener implements GLEventListener {
         break;
     }
     snowmanRoot.update(); // IMPORTANT – the scene graph has changed
+  }
+
+  private void rotateSpotlight() {
+    double deltaTime = getSeconds() - lastTime;
+    rotateSpotlightAngle += SPOTLIGHT_ROTATION_SPEED * deltaTime;
+    rotateSpotlight.setTransform(Mat4Transform.rotateAroundY(rotateSpotlightAngle));
+    spotlightRoot.update();
+    System.out.println("Rotating spotlight");
   }
 
   private void rock() {
@@ -569,8 +632,6 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   private void roll() {
-    //double elapsedTime = getSeconds()-startTime;
-
     //We do the translations in two goes, so that the rotation occurs from the centre of the body
     rotateHeadAngle = MAX_ROTATION_HEAD_ANGLE * (float)Math.sin(elapsedTime) * currentAnimationSpeed;
     Mat4 translateRadius = Mat4Transform.translate(0, BODY_DIAMETER / 2, 0);
@@ -603,8 +664,6 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   private void slide() {
-    //double elapsedTime = getSeconds()-startTime;
-
     //Multiply by -1 so that when we slide, rock and roll..
     //We rock and roll in the same direction as the slide, looks a bit more believable
     xPosition = MAX_SLIDE_POSITION * (float)Math.sin(elapsedTime) * currentAnimationSpeed * -1;
