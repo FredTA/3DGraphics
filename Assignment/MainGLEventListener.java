@@ -170,6 +170,10 @@ public class MainGLEventListener implements GLEventListener {
   private float spotlightLampBaseY = 13;
   private float spotlightLampBaseZ = 0;
 
+  private static float SPOTLIGHT_ROTATION_Z = 40f;
+  private static float SPOTLIGHT_INNER_CUTTOFF = 21f;
+  private static float SPOTLIGHT_OUTER_CUTOFF = 23.5f;
+
   private boolean spotlightActive = true;
   private static final float SPOTLIGHT_ROTATION_SPEED = 90f;
   private double lastTime;
@@ -202,8 +206,14 @@ public class MainGLEventListener implements GLEventListener {
     mainLight.setPosition(new Vec3(MAIN_LIGHT_X, MAIN_LIGHT_Y, MAIN_LIGHT_Z));
     mainLight.setCamera(camera);
 
-    spotlight = new Light(gl, mainLightAmbient, mainLightDiffuse, mainLightSpecular,
-                         (float)Math.cos(Math.toRadians(8.5f)), (float)Math.cos(Math.toRadians(12.5f)));
+    //Setup the main world light - make it a little yellowy
+    Vec3 spotlightAmbient = new Vec3(0, 0, 0);
+    Vec3 spotlightDiffuse = new Vec3(1, 1, 0.25f);
+    Vec3 spotlightSpecular = new Vec3(1, 1, 0.25f);
+
+    spotlight = new Light(gl, spotlightAmbient, spotlightDiffuse, spotlightSpecular,
+                         (float)Math.cos(Math.toRadians(SPOTLIGHT_INNER_CUTTOFF)),
+                         (float)Math.cos(Math.toRadians(SPOTLIGHT_OUTER_CUTOFF)));
     spotlight.setCamera(camera);
 
     //-----------Floor--------------------
@@ -291,7 +301,7 @@ public class MainGLEventListener implements GLEventListener {
    NameNode spotlightPole2 = new NameNode("Spotlight pole 2");
    rotateSpotlight = new TransformNode("Rotate spotlight", Mat4Transform.rotateAroundY(rotateSpotlightAngle));
    m = Mat4Transform.translate(2.2f, 6f, 0f);
-   m = Mat4.multiply(m, Mat4Transform.rotateAroundZ(35));
+   m = Mat4.multiply(m, Mat4Transform.rotateAroundZ(SPOTLIGHT_ROTATION_Z));
    // m = Mat4.multiply(m, Mat4Transform.scale(3f, 0.4f, 0.4f));
    TransformNode makeSpotlightPole2 = new TransformNode("Move pole 2 and rotate", m);
    TransformNode scaleSpotlightPole2 = new TransformNode("Scale spotlight pole 2", Mat4Transform.scale(5f, 0.4f, 0.4f));
@@ -580,6 +590,12 @@ public class MainGLEventListener implements GLEventListener {
 
     float xDir = (float)Math.sin(Math.toRadians(rotateSpotlightAngle + 90));
     float zDir = (float)Math.cos(Math.toRadians(rotateSpotlightAngle + 90));
+
+    float yDir = -1 * Math.abs((float)Math.cos(Math.toRadians(SPOTLIGHT_ROTATION_Z)));
+    float horizontalComponent = Math.abs((float)Math.sin(Math.toRadians(SPOTLIGHT_ROTATION_Z)));
+
+    xDir = xDir * horizontalComponent;
+    zDir = zDir * horizontalComponent;
 
     spotlight.setDirection(xDir, -1, zDir);
     spotlight.setPosition(getSpotlightPosition());
