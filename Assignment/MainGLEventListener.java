@@ -249,10 +249,10 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(4.2f, 4.2f, 4.2f));
     crate = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
 
-    modelMatrix = Mat4Transform.translate(8.9f, 0.5f, 0f);
+    modelMatrix = Mat4Transform.translate(7.4f, (1.7f / 2), 0f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundY(25));
-    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0f, 0f, 0.8f));
-    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(1f, 1f, 1f));
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0f, 0f, 1.3f));
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(1.7f, 1.7f, 1.7f));
     crate2 = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
 
 
