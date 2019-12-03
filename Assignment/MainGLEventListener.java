@@ -120,7 +120,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background, crate, metal;
+  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background, crate, crate2, metal;
   private Light mainLight, spotlight;
   private SGNode snowmanRoot, spotlightRoot;
 
@@ -172,8 +172,8 @@ public class MainGLEventListener implements GLEventListener {
   private float spotlightLampBaseZ = 0;
 
   private static float SPOTLIGHT_ROTATION_Z = 40f;
-  private static float SPOTLIGHT_INNER_CUTTOFF = 24f;
-  private static float SPOTLIGHT_OUTER_CUTOFF = 26.5f;
+  private static float SPOTLIGHT_INNER_CUTTOFF = 28f;
+  private static float SPOTLIGHT_OUTER_CUTOFF = 30.5f;
 
   private boolean spotlightActive = true;
   private static final float SPOTLIGHT_ROTATION_SPEED = 90f;
@@ -241,11 +241,18 @@ public class MainGLEventListener implements GLEventListener {
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "vs_cube.txt", "fs_tt.txt");
     material = new Material(new Vec3(0.9f, 0.9f, 0.9f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(1, 1, 1), 32.0f);
-    modelMatrix = Mat4Transform.translate(10.5f, 2.1f, 0f);
+    modelMatrix = Mat4Transform.translate(10.5f, 2.9f, 0f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundY(25));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundZ(55));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(4.2f, 4.2f, 4.2f));
     crate = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
+
+    modelMatrix = Mat4Transform.translate(8.9f, 0.5f, 0f);
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundY(25));
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0f, 0f, 0.8f));
+    modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(1f, 1f, 1f));
+    crate2 = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
+
 
     //-----------Spotlight pole--------------------
 
@@ -502,6 +509,7 @@ public class MainGLEventListener implements GLEventListener {
     floor.render(gl);
     background.render(gl);
     crate.render(gl);
+    crate2.render(gl);
 
     snowmanRoot.draw(gl);
     spotlightRoot.draw(gl);
