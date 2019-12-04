@@ -211,7 +211,7 @@ public class MainGLEventListener implements GLEventListener {
     //-----------Floor--------------------
 
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
-    Shader shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    Shader shader = new Shader(gl, "vs_main.txt", "fs_main.txt");
     Material material = new Material(new Vec3(0.68f, 0.73f, 0.8f), new Vec3(0.58f, 0.63f, 0.7f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
     Mat4 modelMatrix = Mat4Transform.scale(32,1f,24);
     floor = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, groundTexture);
@@ -229,7 +229,7 @@ public class MainGLEventListener implements GLEventListener {
     //-----------Crates--------------------
 
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-    shader = new Shader(gl, "vs_cube.txt", "fs_tt.txt");
+    shader = new Shader(gl, "vs_main.txt", "fs_crate.txt");
     material = new Material(new Vec3(0.9f, 0.9f, 0.9f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(1, 1, 1), 32.0f);
     modelMatrix = Mat4Transform.translate(10.5f, 2.9f, 0f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundY(25));
@@ -246,7 +246,7 @@ public class MainGLEventListener implements GLEventListener {
     //-----------Spotlight pole--------------------
 
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    shader = new Shader(gl, "vs_main.txt", "fs_main.txt");
     material = new Material(new Vec3(0.8f, 0.8f, 0.9f), new Vec3(0.8f, 0.8f, 0.9f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
     modelMatrix = new Mat4(1);
     metal = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, spotlightTexture);
@@ -254,7 +254,7 @@ public class MainGLEventListener implements GLEventListener {
     //------------Body & Head--------------
 
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
-    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    shader = new Shader(gl, "vs_main.txt", "fs_main.txt");
     material = new Material(new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0.2f, 0.2f, 0.2f), 32.0f);
     modelMatrix = new Mat4(1);
     snowball = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, snowTexture);
@@ -276,7 +276,7 @@ public class MainGLEventListener implements GLEventListener {
     //------------Top hat cylinders
 
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-    shader = new Shader(gl, "vs_cube.txt", "fs_cube.txt");
+    shader = new Shader(gl, "vs_main.txt", "fs_main.txt");
     //Top hat material should have little specular
     material = new Material(new Vec3(1, 1, 1), new Vec3(1, 1, 1), new Vec3(0.1f, 0.1f, 0.1f), 32.0f);
     modelMatrix = new Mat4(1);
