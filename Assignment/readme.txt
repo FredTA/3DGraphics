@@ -2,7 +2,7 @@ The code builds upon the COM3505 excercise sheets, I did not create the graphica
 Any code that does not appear in the excercise sheet is my own. 
 
 ---------RUNNING THE PROGRAM-------
-Navigate to the main folder and execute main.bat. Alternatively, compile all java files and run 
+Navigate to the assignment folder and execute main.bat. Alternatively, compile all java files and run 
 the Main class. JOGL must be setup beforehand.
 
 --------------THE SNOWMAN----------
