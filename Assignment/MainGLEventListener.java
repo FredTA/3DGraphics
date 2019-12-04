@@ -89,8 +89,8 @@ public class MainGLEventListener implements GLEventListener {
 
   //LIGHTS--------
   private static final float MAIN_LIGHT_X = 6.1f;
-  private static final float MAIN_LIGHT_Y = 18.4f;
-  private static final float MAIN_LIGHT_Z = 15.0f;
+  private static final float MAIN_LIGHT_Y = 24.0f;
+  private static final float MAIN_LIGHT_Z = 18.0f;
   private static float SPOTLIGHT_INNER_CUTTOFF = 28f;
   private static float SPOTLIGHT_OUTER_CUTOFF = 30.5f;
 
