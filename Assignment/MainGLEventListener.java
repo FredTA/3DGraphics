@@ -112,7 +112,8 @@ public class MainGLEventListener implements GLEventListener {
   private Camera camera;
   private Mat4 perspective;
   private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background, crate, crate2, metal;
-  private Light mainLight, spotlight;
+  private Light mainLight;
+  private Spotlight spotlight;
   private SGNode snowmanRoot, spotlightRoot;
 
   private TransformNode translateX, rotateAll, translateHead, rollHead, rotateSpotlight;
@@ -186,7 +187,7 @@ public class MainGLEventListener implements GLEventListener {
     Vec3 spotlightDiffuse = new Vec3(1, 1, 0.25f);
     Vec3 spotlightSpecular = new Vec3(1, 1, 0.25f);
 
-    spotlight = new Light(gl, spotlightAmbient, spotlightDiffuse, spotlightSpecular,
+    spotlight = new Spotlight(gl, spotlightAmbient, spotlightDiffuse, spotlightSpecular,
                          (float)Math.cos(Math.toRadians(SPOTLIGHT_INNER_CUTTOFF)),
                          (float)Math.cos(Math.toRadians(SPOTLIGHT_OUTER_CUTOFF)));
     spotlight.setCamera(camera);

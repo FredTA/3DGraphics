@@ -5,48 +5,37 @@ import com.jogamp.opengl.*;
 
 public class Light {
 
-  private Material material;
-  private Vec3 position;
-  private Vec3 direction;
-  private Vec3 rotation = new Vec3(1, 1, 1);
-  private Mat4 model;
-  private Shader shader;
-  private Camera camera;
+  protected Material material;
+  protected Vec3 position;
+  protected Mat4 model;
+  protected Shader shader;
+  protected Camera camera;
 
-  private Vec3 originalAmbient;
-  private Vec3 originalDiffuse;
-  private Vec3 originalSpecular;
+  protected Vec3 originalAmbient;
+  protected Vec3 originalDiffuse;
+  protected Vec3 originalSpecular;
 
-  private float cutoff;
-  private float outerCutoff;
-
-  private float intensity = 1;
+  protected float intensity = 1;
   private static final float INTENSITY_STEP = 0.25f;
 
   public Light(GL3 gl) {
-    material = new Material();
-
     originalAmbient = new Vec3(0.5f, 0.5f, 0.5f);
     originalDiffuse = new Vec3(0.8f, 0.8f, 0.8f);
     originalSpecular = new Vec3(0.8f, 0.8f, 0.8f);
 
-    material.setAmbient(originalAmbient);
-    material.setDiffuse(originalDiffuse);
-    material.setSpecular(originalSpecular);
-
-    position = new Vec3(3f,2f,1f);
-    model = new Mat4(1);
-    shader = new Shader(gl, "vs_light.txt", "fs_light.txt");
-    fillBuffers(gl);
+    setup(gl);
   }
 
   public Light(GL3 gl, Vec3 ambient, Vec3 diffuse, Vec3 specular) {
-    material = new Material();
-
     originalAmbient = ambient;
     originalDiffuse = diffuse;
     originalSpecular = specular;
 
+    setup(gl);
+  }
+
+  private void setup(GL3 gl) {
+    material = new Material();
     material.setAmbient(originalAmbient);
     material.setDiffuse(originalDiffuse);
     material.setSpecular(originalSpecular);
@@ -56,13 +45,6 @@ public class Light {
     shader = new Shader(gl, "vs_light.txt", "fs_light.txt");
     fillBuffers(gl);
   }
-
-    public Light(GL3 gl, Vec3 ambient, Vec3 diffuse, Vec3 specular, float cutoff, float outerCutoff) {
-      this(gl, ambient, diffuse, specular);
-      this.cutoff = cutoff;
-      this.outerCutoff = outerCutoff;
-      direction = new Vec3(0, -1, 0);
-    }
 
   public void decreaseLightIntensity() {
     if (intensity > 0) {
@@ -76,15 +58,6 @@ public class Light {
       intensity += INTENSITY_STEP;
       changeMaterialColourIntensities();
     }
-  }
-
-  public void toggle() {
-    if (intensity == 1) {
-      intensity = 0;
-    } else {
-      intensity = 1;
-    }
-    changeMaterialColourIntensities();
   }
 
   public void changeMaterialColourIntensities() {
@@ -113,32 +86,8 @@ public class Light {
     position.z = z;
   }
 
-  public void setDirection(float x, float y, float z) {
-    direction.x = x;
-    direction.y = y;
-    direction.z = z;
-  }
-
-  public void setRotation(float x, float y, float z) {
-    rotation.x = x;
-    rotation.y = y;
-    rotation.z = z;
-  }
-
-  public Vec3 getDirection(){
-    return direction;
-  }
-
   public Vec3 getPosition() {
     return position;
-  }
-
-  public float getCutoff(){
-    return cutoff;
-  }
-
-  public float getOuterCutoff(){
-    return outerCutoff;
   }
 
   public void setMaterial(Material m) {
@@ -155,17 +104,16 @@ public class Light {
 
   public void render(GL3 gl) {
     Mat4 model = new Mat4(1);
-    model = Mat4.multiply(Mat4Transform.scale(0.6f,0.1f,0.6f), model);
-    model = Mat4.multiply(Mat4Transform.rotateAroundZ(rotation.z), model);
-    model = Mat4.multiply(Mat4Transform.rotateAroundY(rotation.y), model);
     model = Mat4.multiply(Mat4Transform.translate(position), model);
+    renderModel(gl, model);
+  }
 
+  protected void renderModel(GL3 gl, Mat4 model) {
     Mat4 mvpMatrix = Mat4.multiply(camera.getPerspectiveMatrix(), Mat4.multiply(camera.getViewMatrix(), model));
 
     shader.use(gl);
     shader.setFloatArray(gl, "mvpMatrix", mvpMatrix.toFloatArrayForGLSL());
     shader.setVec3(gl, "colour", material.getDiffuse());
-
 
     gl.glBindVertexArray(vertexArrayId[0]);
     gl.glDrawElements(GL.GL_TRIANGLES, indices.length, GL.GL_UNSIGNED_INT, 0);
@@ -183,7 +131,7 @@ public class Light {
    */
   // anticlockwise/counterclockwise ordering
 
-    private float[] vertices = new float[] {  // x,y,z
+    protected float[] vertices = new float[] {  // x,y,z
       -0.5f, -0.5f, -0.5f,  // 0
       -0.5f, -0.5f,  0.5f,  // 1
       -0.5f,  0.5f, -0.5f,  // 2
@@ -216,9 +164,9 @@ public class Light {
   /* THE LIGHT BUFFERS
    */
 
-  private int[] vertexBufferId = new int[1];
-  private int[] vertexArrayId = new int[1];
-  private int[] elementBufferId = new int[1];
+  protected int[] vertexBufferId = new int[1];
+  protected int[] vertexArrayId = new int[1];
+  protected int[] elementBufferId = new int[1];
 
   private void fillBuffers(GL3 gl) {
     gl.glGenVertexArrays(1, vertexArrayId, 0);

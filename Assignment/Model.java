@@ -12,7 +12,8 @@ public class Model {
   private Shader shader;
   private Mat4 modelMatrix;
   private Camera camera;
-  private Light light, spotlight;
+  private Light light;
+  private Spotlight spotlight;
 
 
   //Animation variables
@@ -32,7 +33,7 @@ public class Model {
   private float offsetY;
   private double lastTime;
 
-  public Model(GL3 gl, Camera camera, Light light, Light spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1, int[] textureId2, boolean animate) {
+  public Model(GL3 gl, Camera camera, Light light, Spotlight spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1, int[] textureId2, boolean animate) {
     this.mesh = mesh;
     this.material = material;
     this.modelMatrix = modelMatrix;
@@ -46,11 +47,11 @@ public class Model {
     lastTime = timeOfLastAnimationChange = System.currentTimeMillis()/1000.0;
   }
 
-  public Model(GL3 gl, Camera camera, Light light, Light spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1) {
+  public Model(GL3 gl, Camera camera, Light light, Spotlight spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1) {
     this(gl, camera, light, spotlight, shader, material, modelMatrix, mesh, textureId1, null, false);
   }
 
-  public Model(GL3 gl, Camera camera, Light light, Light spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh) {
+  public Model(GL3 gl, Camera camera, Light light, Spotlight spotlight, Shader shader, Material material, Mat4 modelMatrix, Mesh mesh) {
     this(gl, camera, light, spotlight, shader, material, modelMatrix, mesh, null, null, false);
   }
 
