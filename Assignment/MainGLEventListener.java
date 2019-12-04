@@ -111,7 +111,8 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, background, crate, crate2, metal;
+  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, crate, crate2, metal;
+  private AnimatedModel background;
   private Light mainLight;
   private Spotlight spotlight;
   private SGNode snowmanRoot, spotlightRoot;
@@ -225,7 +226,7 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = Mat4Transform.translate(0, 8, -12f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundX(90));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(32,1f,16));
-    background = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, backgroundTexture, snowfallTexture, true);
+    background = new AnimatedModel(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, backgroundTexture, snowfallTexture);
 
     //-----------Crates--------------------
 
@@ -236,13 +237,13 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundY(25));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundZ(55));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(4.2f, 4.2f, 4.2f));
-    crate = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
+    crate = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture);
 
     modelMatrix = Mat4Transform.translate(7.4f, (1.7f / 2), 0f);
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.rotateAroundY(25));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0f, 0f, 1.3f));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(1.7f, 1.7f, 1.7f));
-    crate2 = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture, false);
+    crate2 = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture);
 
     //-----------Spotlight pole--------------------
 

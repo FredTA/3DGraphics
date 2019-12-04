@@ -10,12 +10,12 @@ public class Spotlight extends Light {
   private float cutoff;
   private float outerCutoff;
 
-    public Spotlight(GL3 gl, Vec3 ambient, Vec3 diffuse, Vec3 specular, float cutoff, float outerCutoff) {
-      super(gl, ambient, diffuse, specular);
-      this.cutoff = cutoff;
-      this.outerCutoff = outerCutoff;
-      direction = new Vec3(0, -1, 0);
-    }
+  public Spotlight(GL3 gl, Vec3 ambient, Vec3 diffuse, Vec3 specular, float cutoff, float outerCutoff) {
+    super(gl, ambient, diffuse, specular);
+    this.cutoff = cutoff;
+    this.outerCutoff = outerCutoff;
+    direction = new Vec3(0, -1, 0);
+  }
 
   public void toggle() {
     if (intensity == 1) {
