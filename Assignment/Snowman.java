@@ -217,9 +217,6 @@ public class Snowman {
      TransformNode makeLetterLine3 = new TransformNode("Scale line 3 and move up", m);
      ModelNode letterLine3Node = new ModelNode("Leter line 3", topHatLetter);
 
-
-
-
      //-------------------------SCENE GRAPH------------------------------------
 
      snowmanRoot.addChild(translateX);
@@ -525,6 +522,7 @@ public class Snowman {
     roughStone.dispose(gl);
     topHatMain.dispose(gl);
     topHatRibbon.dispose(gl);
+    topHatLetter.dispose(gl);
   }
 
   public void draw(GL3 gl){
