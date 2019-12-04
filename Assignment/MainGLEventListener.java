@@ -53,8 +53,12 @@ public class MainGLEventListener implements GLEventListener {
   public void dispose(GLAutoDrawable drawable) {
     GL3 gl = drawable.getGL().getGL3();
     mainLight.dispose(gl);
+    spotlight.dispose(gl);
     floor.dispose(gl);
-    //snowball.dispose(gl);
+    background.dispose(gl);
+    crate.dispose(gl);
+    crate2.dispose(gl);
+    metal.dispose(gl);
   }
 
   //---------------------------INTERACTION----------------------------------
@@ -81,7 +85,7 @@ public class MainGLEventListener implements GLEventListener {
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, snowball, smoothStone, roughStone, topHatMain, topHatRibbon, crate, crate2, metal;
+  private Model floor, crate, crate2, metal;
   private AnimatedModel background;
   private Light mainLight;
   private Spotlight spotlight;

@@ -489,4 +489,14 @@ public class Snowman {
     return System.currentTimeMillis()/1000.0;
   }
 
+  /* Clean up memory, if necessary */
+  public void dispose(GLAutoDrawable drawable) {
+    GL3 gl = drawable.getGL().getGL3();
+    snowball.dispose(gl);
+    smoothStone.dispose(gl);
+    roughStone.dispose(gl);
+    topHatMain.dispose(gl);
+    topHatRibbon.dispose(gl);
+  }
+
 }
