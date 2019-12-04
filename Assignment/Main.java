@@ -83,18 +83,18 @@ public class Main extends JFrame implements ActionListener {
 
   public void actionPerformed(ActionEvent e) {
     if (e.getActionCommand().equalsIgnoreCase("Rock")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.Rock);
+      glEventListener.selectSnowmanAnimation(AnimationSelections.Rock);
     }
     else if (e.getActionCommand().equalsIgnoreCase("Roll")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.Roll);    }
+      glEventListener.selectSnowmanAnimation(AnimationSelections.Roll);    }
     else if (e.getActionCommand().equalsIgnoreCase("Slide")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.Slide);
+      glEventListener.selectSnowmanAnimation(AnimationSelections.Slide);
     }
     else if (e.getActionCommand().equalsIgnoreCase("Slide, Rock and Roll")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.SlideRockAndRoll);
+      glEventListener.selectSnowmanAnimation(AnimationSelections.SlideRockAndRoll);
     }
     else if (e.getActionCommand().equalsIgnoreCase("reset")) {
-      glEventListener.selectAnimation(MainGLEventListener.AnimationSelections.None);
+      glEventListener.selectSnowmanAnimation(AnimationSelections.None);
     }
     else if (e.getActionCommand().equalsIgnoreCase("Toggle Spotlight")) {
       glEventListener.toggleSpotlight();
