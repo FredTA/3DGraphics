@@ -92,7 +92,6 @@ public class Snowman {
     topHatRibbon = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatBandTexture);
   }
 
-
   private void setupSnowmanSceneGraph() {
      snowmanRoot = new NameNode("snowman structure");
 
@@ -238,14 +237,6 @@ public class Snowman {
                            topHatBand.addChild(makeTopHatBand);
                              makeTopHatBand.addChild(topHatBandNode);
      snowmanRoot.update();
-  }
-
-  public void draw(GL3 gl){
-    if (currentAnimation != AnimationSelections.None) {
-      animate();
-    }
-
-    snowmanRoot.draw(gl);
   }
 
   //---------------------------ANIMATIONS------------------------------------
@@ -481,7 +472,7 @@ public class Snowman {
     }
   }
 
-  //TODO do we need these?
+  //TIME------
   private double elapsedTime;
   private double animationStartTime = -1;
 
@@ -497,6 +488,13 @@ public class Snowman {
     roughStone.dispose(gl);
     topHatMain.dispose(gl);
     topHatRibbon.dispose(gl);
+  }
+
+  public void draw(GL3 gl){
+    if (currentAnimation != AnimationSelections.None) {
+      animate();
+    }
+    snowmanRoot.draw(gl);
   }
 
 }

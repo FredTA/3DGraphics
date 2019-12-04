@@ -9,8 +9,6 @@ import com.jogamp.opengl.util.glsl.*;
 
 public class MainGLEventListener implements GLEventListener {
 
-  private static final boolean DISPLAY_SHADERS = false;
-
   public MainGLEventListener(Camera camera) {
     this.camera = camera;
     this.camera.setPosition(new Vec3(-7f,16f,26f));
@@ -31,8 +29,6 @@ public class MainGLEventListener implements GLEventListener {
     gl.glEnable(GL.GL_CULL_FACE); // default is 'not enabled'
     gl.glCullFace(GL.GL_BACK);   // default is 'back', assuming CCW
     initialise(gl);
-    programStartTime = getSeconds();
-    lastTime = getSeconds();
   }
 
   /* Called to indicate the drawing surface has been moved and/or resized  */
@@ -58,7 +54,6 @@ public class MainGLEventListener implements GLEventListener {
     background.dispose(gl);
     crate.dispose(gl);
     crate2.dispose(gl);
-    metal.dispose(gl);
   }
 
   //---------------------------INTERACTION----------------------------------
@@ -76,37 +71,26 @@ public class MainGLEventListener implements GLEventListener {
   }
 
   public void toggleSpotlight(){
-    spotlightActive = !spotlightActive;
-    spotlight.toggle();
+    securitySpotlight.toggle();
   }
-
 
   // ----------------------THE SCENE------------------------------
 
   private Camera camera;
   private Mat4 perspective;
-  private Model floor, crate, crate2, metal;
+  private Model floor, crate, crate2;
   private AnimatedModel background;
   private Light mainLight;
   private Spotlight spotlight;
-  private SGNode spotlightRoot;
-
-  private TransformNode rotateSpotlight;
-
-
-  private float rotateSpotlightAngleStart = 0, rotateSpotlightAngle = rotateSpotlightAngleStart;
 
   private Snowman snowman;
+  private SecuritySpotlight securitySpotlight;
 
 
   //LIGHTS--------
   private static final float MAIN_LIGHT_X = 6.1f;
   private static final float MAIN_LIGHT_Y = 18.4f;
   private static final float MAIN_LIGHT_Z = 15.0f;
-  private float spotlightLampBaseX = -9.5f;
-  private float spotlightLampBaseY = 13f;
-  private float spotlightLampBaseZ = 0;
-  private static float SPOTLIGHT_ROTATION_Z = 40f;
   private static float SPOTLIGHT_INNER_CUTTOFF = 28f;
   private static float SPOTLIGHT_OUTER_CUTOFF = 30.5f;
 
@@ -114,13 +98,9 @@ public class MainGLEventListener implements GLEventListener {
     setupLights(gl);
     setupModels(gl);
 
+    //These are the two main parts of the scene, so they are separated out into different classes
     snowman = new Snowman(gl, camera, mainLight, spotlight);
-
-    setupSpotlightSceneGraph();
-    //
-    // spotlightRoot.print(0, false);
-    // snowmanRoot.print(0, false);
-    // System.exit(0);
+    securitySpotlight = new SecuritySpotlight(gl, camera, mainLight, spotlight);
   }
 
   private void setupLights(GL3 gl) {
@@ -151,8 +131,6 @@ public class MainGLEventListener implements GLEventListener {
 
     int[] crateTexture = TextureLibrary.loadTexture(gl, "textures/container2.jpg");
     int[] crateSpeculularTexture = TextureLibrary.loadTexture(gl, "textures/container2_specular.jpg");
-
-    int[] spotlightTexture = TextureLibrary.loadTexture(gl, "textures/metal.jpg");
 
     //-----------Floor--------------------
 
@@ -188,44 +166,6 @@ public class MainGLEventListener implements GLEventListener {
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.translate(0f, 0f, 1.3f));
     modelMatrix = Mat4.multiply(modelMatrix, Mat4Transform.scale(1.7f, 1.7f, 1.7f));
     crate2 = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, crateTexture, crateSpeculularTexture);
-
-    //-----------Spotlight pole--------------------
-
-    mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-    shader = new Shader(gl, "vs_main.txt", "fs_main.txt");
-    material = new Material(new Vec3(0.8f, 0.8f, 0.9f), new Vec3(0.8f, 0.8f, 0.9f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
-    modelMatrix = new Mat4(1);
-    metal = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, spotlightTexture);
-  }
-
-  private void setupSpotlightSceneGraph() {
-    spotlightRoot = new NameNode("Spotlight Root");
-    NameNode spotlightPole = new NameNode("Spotlight pole");
-    Mat4 m = Mat4Transform.translate(-9.5f, 6f, 0f);
-    TransformNode makeSpotlightPole = new TransformNode("Move pole and scale", m);
-    TransformNode scaleSpotlightPole = new TransformNode("Scale spotlight pole", Mat4Transform.scale(0.6f, 12f, 0.6f));
-    ModelNode spotlightPoleNode = new ModelNode("Spotlight Pole", metal);
-
-    NameNode spotlightPole2 = new NameNode("Spotlight pole 2");
-    rotateSpotlight = new TransformNode("Rotate spotlight", Mat4Transform.rotateAroundY(rotateSpotlightAngle));
-    m = Mat4Transform.translate(2.2f, 6f, 0f);
-    m = Mat4.multiply(m, Mat4Transform.rotateAroundZ(SPOTLIGHT_ROTATION_Z));
-    TransformNode makeSpotlightPole2 = new TransformNode("Move pole 2 and rotate", m);
-    TransformNode scaleSpotlightPole2 = new TransformNode("Scale spotlight pole 2", Mat4Transform.scale(5f, 0.4f, 0.4f));
-    ModelNode spotlightPole2Node = new ModelNode("Spotlight Pole2 ", metal);
-
-    spotlight.setPosition(new Vec3(spotlightLampBaseX, spotlightLampBaseY, spotlightLampBaseZ));
-
-    spotlightRoot.addChild(spotlightPole);
-     spotlightPole.addChild(makeSpotlightPole);
-       makeSpotlightPole.addChild(scaleSpotlightPole);
-         scaleSpotlightPole.addChild(spotlightPoleNode);
-       makeSpotlightPole.addChild(spotlightPole2);
-        spotlightPole2.addChild(rotateSpotlight);
-          rotateSpotlight.addChild(makeSpotlightPole2);
-            makeSpotlightPole2.addChild(scaleSpotlightPole2);
-              scaleSpotlightPole2.addChild(spotlightPole2Node);
-    spotlightRoot.update();
   }
 
   private void render(GL3 gl) {
@@ -239,59 +179,6 @@ public class MainGLEventListener implements GLEventListener {
     crate2.render(gl);
 
     snowman.draw(gl);
-    spotlightRoot.draw(gl);
-
-    if (spotlightActive) {
-      rotateSpotlight();
-    }
-
-    lastTime = getSeconds();
+    securitySpotlight.draw(gl);
   }
-
-  //--------------------------ANIMATIONS----------------------------------------
-
-  //SPOTLIGHT ANIMATION------------
-  private boolean spotlightActive = true;
-  private static final float SPOTLIGHT_ROTATION_SPEED = 90f;
-
-  private void rotateSpotlight() {
-    double deltaTime = getSeconds() - lastTime;
-    rotateSpotlightAngle += SPOTLIGHT_ROTATION_SPEED * deltaTime;
-    rotateSpotlight.setTransform(Mat4Transform.rotateAroundY(rotateSpotlightAngle));
-    spotlightRoot.update();
-
-    float xDir = (float)Math.sin(Math.toRadians(rotateSpotlightAngle + 90));
-    float zDir = (float)Math.cos(Math.toRadians(rotateSpotlightAngle + 90));
-
-    float yDir = -1 * Math.abs((float)Math.cos(Math.toRadians(SPOTLIGHT_ROTATION_Z)));
-    float horizontalComponent = Math.abs((float)Math.sin(Math.toRadians(SPOTLIGHT_ROTATION_Z)));
-
-    xDir = xDir * horizontalComponent;
-    zDir = zDir * horizontalComponent;
-
-    spotlight.setDirection(xDir, -1, zDir);
-    rotateSpotlightLamp();
-  }
-
-  private void rotateSpotlightLamp() {
-    double elapsedTime = getSeconds() - programStartTime;
-
-    float x = spotlightLampBaseX - 3.75f*(float)(Math.sin(Math.toRadians(rotateSpotlightAngle - 90)));
-    float y = spotlightLampBaseY;
-    float z = spotlightLampBaseZ - 3.75f*(float)(Math.cos(Math.toRadians(rotateSpotlightAngle - 90)));
-
-    spotlight.setPosition(x, y, z);
-    spotlight.setRotation(0, rotateSpotlightAngle, SPOTLIGHT_ROTATION_Z);
-  }
-  //------------------------------------TIME-----------------------------------
-
-  private double elapsedTime;
-  private double programStartTime;
-  private double lastTime;
-  private double animationStartTime = -1;
-
-  private double getSeconds() {
-    return System.currentTimeMillis()/1000.0;
-  }
-
 }
