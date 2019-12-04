@@ -7,7 +7,7 @@ public class Snowman {
 
   private SGNode snowmanRoot;
 
-  private Model snowball, smoothStone, roughStone, topHatMain, topHatRibbon;
+  private Model snowball, smoothStone, roughStone, topHatMain, topHatRibbon, topHatLetter;
 
   private TransformNode initialBodyRotation;
   private TransformNode initialHeadRotation;
@@ -34,11 +34,11 @@ public class Snowman {
   private static final float EYE_OFFSET = 0.5f;
   //SNOMAN HAT------
   private static final float TOP_HAT_MAIN_OFFSET = -0.3f; //So that it sits a bit lower on the head
-  private static final float TOP_HAT_MAIN_HEIGHT = 1.45f;
+  private static final float TOP_HAT_MAIN_HEIGHT = 1.65f;
   private static final float TOP_HAT_MAIN_WIDTH = 1.3f;
   private static final float TOP_HAT_RIM_HEIGHT = 0.15f;
-  private static final float TOP_HAT_RIM_WIDTH = 2.2f;
-  private static final float TOP_HAT_BAND_HEIGHT = 0.3f;
+  private static final float TOP_HAT_RIM_WIDTH = 2.4f;
+  private static final float TOP_HAT_BAND_HEIGHT = 0.35f;
   private static final float TOP_HAT_BAND_WIDTH = 1.34f;
 
   private TransformNode translateX, rotateAll, translateHead, rollHead;
@@ -90,6 +90,9 @@ public class Snowman {
     //Top hat ribon should have lots of specular
     material = new Material(new Vec3(0.5f, 0.5f, 0.5f), new Vec3(0.7f, 0.7f, 0.7f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
     topHatRibbon = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatBandTexture);
+
+    material = new Material(new Vec3(0.8f, 0.8f, 0.5f), new Vec3(0.8f, 0.8f, 0.5f), new Vec3(0.9f, 0.9f, 0.9f), 32.0f);
+    topHatLetter = new Model(gl, camera, mainLight, spotlight, shader, material, modelMatrix, mesh, topHatBandTexture);
   }
 
   private void setupSnowmanSceneGraph() {
@@ -191,6 +194,32 @@ public class Snowman {
      TransformNode makeTopHatBand = new TransformNode("Scale and move to bottom of top hat", m);
      ModelNode topHatBandNode = new ModelNode("topHatBand", topHatRibbon);
 
+    //---------------------top hat letter---------------------------------
+
+     m = Mat4Transform.translate(TOP_HAT_MAIN_WIDTH / 14, TOP_HAT_MAIN_HEIGHT / 10, TOP_HAT_MAIN_WIDTH / 2);
+     TransformNode topHatLetterPosition = new TransformNode("Move letter to hat surface", m);
+     NameNode letter = new NameNode("Top hat letter");
+
+     NameNode letterLine1 = new NameNode("Letter line 1");
+     m = Mat4Transform.scale(TOP_HAT_MAIN_WIDTH / 8, TOP_HAT_MAIN_HEIGHT / 1.71f, TOP_HAT_MAIN_WIDTH / 10);
+     m = Mat4.multiply(Mat4Transform.translate(-TOP_HAT_MAIN_WIDTH / 4.4f, 0, 0), m);
+     TransformNode makeLetterLine1 = new TransformNode("Scale line 1 and move left", m);
+     ModelNode letterLine1Node = new ModelNode("Leter line 1", topHatLetter);
+
+     NameNode letterLine2 = new NameNode("Letter line 2");
+     m = Mat4Transform.scale(TOP_HAT_MAIN_WIDTH / 3, TOP_HAT_MAIN_HEIGHT / 12, TOP_HAT_MAIN_WIDTH / 10);
+     TransformNode makeLetterLine2 = new TransformNode("Scale line 2", m);
+     ModelNode letterLine2Node = new ModelNode("Leter line 2", topHatLetter);
+
+
+     NameNode letterLine3 = new NameNode("Letter line 3");
+     m = Mat4.multiply(Mat4Transform.translate(0, TOP_HAT_MAIN_HEIGHT * 0.25f, 0), m);
+     TransformNode makeLetterLine3 = new TransformNode("Scale line 3 and move up", m);
+     ModelNode letterLine3Node = new ModelNode("Leter line 3", topHatLetter);
+
+
+
+
      //-------------------------SCENE GRAPH------------------------------------
 
      snowmanRoot.addChild(translateX);
@@ -236,6 +265,14 @@ public class Snowman {
                          topHatBody.addChild(topHatBand);
                            topHatBand.addChild(makeTopHatBand);
                              makeTopHatBand.addChild(topHatBandNode);
+                         topHatBody.addChild(topHatLetterPosition);
+                           topHatLetterPosition.addChild(letter);
+                             letter.addChild(makeLetterLine1);
+                               makeLetterLine1.addChild(letterLine1Node);
+                             letter.addChild(makeLetterLine2);
+                               makeLetterLine2.addChild(letterLine2Node);
+                             letter.addChild(makeLetterLine3);
+                               makeLetterLine3.addChild(letterLine3Node);
      snowmanRoot.update();
   }
 
