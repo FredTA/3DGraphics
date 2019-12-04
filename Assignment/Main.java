@@ -1,3 +1,7 @@
+/* I declare that this code is my own work, as specified in the readme.
+Author Fred Tovey-Ansell ftovey-ansell1@sheffield.ac.uk */
+
+
 import gmaths.*;
 import java.awt.*;
 import java.awt.event.*;

@@ -109,7 +109,7 @@ public class SecuritySpotlight {
   private double getSeconds() {
     return System.currentTimeMillis()/1000.0;
   }
-  
+
 
   public void draw(GL3 gl){
     if (spotlightActive) {
