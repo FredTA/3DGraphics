@@ -32,48 +32,36 @@ struct Material {
   
 uniform Material material;
 
-void main() {
+vec3 calculateColourFromLight(Light givenLight) {
   // ambient
-  vec3 ambient = light.ambient * material.ambient * texture(first_texture, aTexCoord).rgb;
-  
+  vec3 ambient = givenLight.ambient * material.ambient * texture(first_texture, aTexCoord).rgb;
+
   // diffuse
   vec3 norm = normalize(aNormal);
-  vec3 lightDir = normalize(light.position - aPos);  
+  vec3 lightDir = normalize(givenLight.position - aPos);  
   float diff = max(dot(norm, lightDir), 0.0);
-  vec3 diffuse = light.diffuse * (diff * material.diffuse) * texture(first_texture, aTexCoord).rgb;
+  vec3 diffuse = givenLight.diffuse * (diff * material.diffuse) * texture(first_texture, aTexCoord).rgb; 
   
   // specular 
   vec3 viewDir = normalize(viewPos - aPos);
-  vec3 reflectDir = reflect(-lightDir, norm);  
+  vec3 reflectDir = reflect(-lightDir, norm);
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-  vec3 specular = light.specular * (spec * material.specular) * texture(second_texture, aTexCoord).rbg;
+  vec3 specular = givenLight.specular * (spec * material.specular) * texture(second_texture, aTexCoord).rbg;
 
-  vec3 result = ambient + diffuse + specular;
+  return ambient + diffuse + specular;
+} 
+
+void main() {
+  vec3 resultOfMainLight = calculateColourFromLight(light);
   
-  //------------spotlight-------------
-  
-  lightDir = normalize(spotlight.position - aPos); 
+  vec3 lightDir = normalize(spotlight.position - aPos); 
   float theta = dot(lightDir, normalize(-spotlight.direction));
   float epsilon = spotlight.cuttoff - spotlight.outerCuttoff;
   float intensity = clamp((theta - spotlight.outerCuttoff) / epsilon, 0.0, 1.0);
   
-
-  // ambient
-  vec3 ambient2 = spotlight.ambient * material.ambient * texture(first_texture, aTexCoord).rgb;
+  vec3 resultOfSpotlight = calculateColourFromLight(spotlight) * intensity;
   
-  // diffuse
-  norm = normalize(aNormal); 
-  diff = max(dot(norm, lightDir), 0.0);
-  vec3 diffuse2 = spotlight.diffuse * (diff * material.diffuse) * texture(first_texture, aTexCoord).rgb;
-  
-  // specular 
-  viewDir = normalize(viewPos - aPos);
-  reflectDir = reflect(-lightDir, norm);  
-  spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-  vec3 specular2 = spotlight.specular * (spec * material.specular) * texture(second_texture, aTexCoord).rbg;
-  
-  result += (ambient2 + diffuse2 + specular2) * intensity;
-
+  vec3 result = resultOfMainLight + resultOfSpotlight;
   
   fragColor = vec4(result, 1.0);
 }
