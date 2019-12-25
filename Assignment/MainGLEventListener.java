@@ -171,8 +171,6 @@ public class MainGLEventListener implements GLEventListener {
   private void render(GL3 gl) {
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
-    mainLight.render(gl);
-    spotlight.render(gl);
     floor.render(gl);
     background.render(gl);
     crate.render(gl);
@@ -180,5 +178,8 @@ public class MainGLEventListener implements GLEventListener {
 
     snowman.draw(gl);
     securitySpotlight.draw(gl);
+
+    mainLight.render(gl);
+    spotlight.render(gl);
   }
 }
